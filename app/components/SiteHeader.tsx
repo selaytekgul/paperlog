@@ -1,6 +1,7 @@
 import type { ChatGPTUser } from "../chatgpt-auth";
 import { chatGPTSignInPath } from "../chatgpt-auth";
 import { SearchBox } from "./SearchBox";
+import { NotificationsMenu } from "./NotificationsMenu";
 
 export function SiteHeader({ user }: { user: ChatGPTUser | null }) {
   return (
@@ -11,13 +12,13 @@ export function SiteHeader({ user }: { user: ChatGPTUser | null }) {
       </a>
       <SearchBox compact />
       <nav className="top-actions" aria-label="Primary navigation">
-        <a className="nav-link" href="#discover">Discover</a>
+        <a className="nav-link" href="/explore">Explore</a>
         {user ? (
-          <a className="pill-button secondary" href="/profile">{user.displayName.split(" ")[0]}</a>
+          <><NotificationsMenu /><a className="pill-button secondary" href="/profile">{user.displayName.split(" ")[0]}</a></>
         ) : (
           <a className="pill-button secondary" href={chatGPTSignInPath("/")}>Sign in</a>
         )}
-        <a className="pill-button" href="#discover">Explore papers</a>
+        <a className="pill-button" href="/explore">Explore papers</a>
       </nav>
     </header>
   );

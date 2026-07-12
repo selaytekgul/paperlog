@@ -3,6 +3,7 @@ import { SearchBox } from "./SearchBox";
 import { SiteHeader } from "./SiteHeader";
 import { RecentActivity } from "./RecentActivity";
 import { SiteFooter } from "./SiteFooter";
+import { FeaturedPapers } from "./FeaturedPapers";
 
 const featured = [
   { id: "W2626778328", topic: "Machine learning", year: 2017, title: "Attention Is All You Need", authors: "Ashish Vaswani, Noam Shazeer, Niki Parmar et al." },
@@ -39,16 +40,7 @@ export function HomeExperience({ user }: { user: ChatGPTUser | null }) {
             <span className="section-kicker">Updated through reader activity</span>
           </div>
           <div className="main-grid">
-            <div className="paper-grid">
-              {featured.map((paper) => (
-                <a href={`/paper/${paper.id}`} className="paper-card" key={paper.id}>
-                  <div className="paper-meta"><span className="topic-chip">{paper.topic}</span><span>{paper.year}</span></div>
-                  <h3 className="paper-title">{paper.title}</h3>
-                  <p className="paper-authors">{paper.authors}</p>
-                  <div className="paper-bottom"><span className="note-paper">Open paper page</span><span className="log-count">Reader activity shown when available</span></div>
-                </a>
-              ))}
-            </div>
+            <FeaturedPapers papers={featured} />
             <RecentActivity />
           </div>
           <div className="value-strip">

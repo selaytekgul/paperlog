@@ -1,5 +1,7 @@
 # Paperlog MVP plan
 
+> Status: implemented through the five-person alpha milestone on 2026-07-12. The next work should be driven by observed tester behavior rather than additional speculative features.
+
 ## Product promise
 
 Paperlog is a social reading diary for research papers: find a paper, rate it, and leave the thought you wish someone had shared with you.

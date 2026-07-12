@@ -40,14 +40,14 @@ export function SearchBox({ compact = false }: { compact?: boolean }) {
         value={query}
         onChange={(event) => search(event.target.value)}
         onFocus={() => query && setOpen(true)}
-        placeholder={compact ? "Search papers, authors or DOI" : "Search a title, author, topic, or DOI"}
+        placeholder={compact ? "Title, DOI, arXiv or OpenReview" : "Search a title, author, topic, DOI, arXiv ID, or OpenReview URL"}
         autoComplete="off"
       />
       {compact ? <span className="search-glyph" aria-hidden="true">⌕</span> : <button className="pill-button" type="submit">Find paper</button>}
       {open && (
         <div className="search-panel">
           {loading && <div className="search-state">Searching the literature…</div>}
-          {!loading && results.length === 0 && <div className="search-state">Type at least two characters to search OpenAlex.</div>}
+          {!loading && results.length === 0 && <div className="search-state">Search OpenAlex by title, author, DOI, arXiv ID, or OpenReview URL.</div>}
           {!loading && results.map((paper) => (
             <button className="search-result" type="button" key={paper.id} onClick={() => { window.location.href = `/paper/${paper.id}`; }}>
               <strong>{paper.title}</strong>

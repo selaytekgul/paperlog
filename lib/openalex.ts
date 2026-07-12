@@ -16,6 +16,8 @@ type OpenAlexWork = {
   best_oa_location?: { landing_page_url?: string; pdf_url?: string };
   primary_topic?: { display_name?: string };
   abstract_inverted_index?: Record<string, number[]>;
+  ids?: { arxiv?: string; doi?: string; openreview?: string };
+  locations?: Array<{ landing_page_url?: string }>;
 };
 
 function abstractFromIndex(index?: Record<string, number[]>): string {
@@ -50,18 +52,99 @@ export function normalizeOpenAlexWork(work: OpenAlexWork): Paper {
     pdfUrl: work.best_oa_location?.pdf_url ?? work.primary_location?.pdf_url ?? null,
     citedByCount: work.cited_by_count ?? 0,
     topic: work.primary_topic?.display_name ?? "Research",
+    arxivId: extractArxivId(work),
+    openReviewId: extractOpenReviewId(work),
   };
 }
 
+function extractArxivId(work: OpenAlexWork) {
+  const candidate = work.ids?.arxiv ?? work.locations?.map((location) => location.landing_page_url).find((url) => url?.includes("arxiv.org/"));
+  return candidate?.match(/arxiv\.org\/(?:abs|pdf)\/([^?#/.]+(?:\.\d+)?)/i)?.[1] ?? null;
+}
+
+function extractOpenReviewId(work: OpenAlexWork) {
+  const candidate = work.ids?.openreview ?? work.locations?.map((location) => location.landing_page_url).find((url) => url?.includes("openreview.net/forum"));
+  return candidate?.match(/[?&]id=([^&#]+)/)?.[1] ?? null;
+}
+
 export async function searchOpenAlex(query: string): Promise<Paper[]> {
+  const direct = parsePaperIdentifier(query);
+  if (direct.kind === "openalex") {
+    const paper = await getOpenAlexPaper(direct.value);
+    return paper ? [paper] : [];
+  }
+  if (direct.kind === "doi") {
+    const paper = await getOpenAlexPaperByDoi(direct.value);
+    if (paper) return [paper];
+  }
+  if (direct.kind === "arxiv") {
+    const paper = await getOpenAlexPaperByArxiv(direct.value);
+    if (paper) return [paper];
+  }
+  if (direct.kind === "openreview") {
+    const paper = await getOpenAlexPaperByOpenReview(direct.value);
+    if (paper) return [paper];
+  }
   const url = new URL("https://api.openalex.org/works");
-  url.searchParams.set("search", query);
+  url.searchParams.set("search", direct.kind === "arxiv" || direct.kind === "openreview" ? direct.value : query);
   url.searchParams.set("per-page", "8");
   addOpenAlexCredentials(url);
   const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 300 } });
   if (!response.ok) throw new Error("OpenAlex search is temporarily unavailable");
   const payload = (await response.json()) as { results?: OpenAlexWork[] };
   return (payload.results ?? []).map(normalizeOpenAlexWork).filter((paper) => paper.id);
+}
+
+export function parsePaperIdentifier(input: string): { kind: "openalex" | "doi" | "arxiv" | "openreview" | "search"; value: string } {
+  const value = input.trim();
+  const work = value.match(/(?:openalex\.org\/)?(W\d+)/i)?.[1];
+  if (work) return { kind: "openalex", value: work.toUpperCase() };
+  const arxivDoi = value.match(/10\.48550\/arxiv\.([^\s?#]+)/i)?.[1];
+  if (arxivDoi) return { kind: "arxiv", value: arxivDoi };
+  const doi = value.match(/(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)?(10\.\d{4,9}\/[-._;()/:A-Z0-9]+)/i)?.[1];
+  if (doi) return { kind: "doi", value: doi.toLowerCase().replace(/[.,;]$/, "") };
+  const arxiv = value.match(/(?:arxiv:\s*|arxiv\.org\/(?:abs|pdf)\/)?(\d{4}\.\d{4,5}(?:v\d+)?|[a-z-]+\/\d{7})(?:\.pdf)?/i)?.[1];
+  if (arxiv) return { kind: "arxiv", value: arxiv };
+  const openreview = value.match(/openreview\.net\/(?:forum|pdf)\?id=([^&#]+)/i)?.[1];
+  if (openreview) return { kind: "openreview", value: openreview };
+  return { kind: "search", value };
+}
+
+async function getOpenAlexPaperByDoi(doi: string): Promise<Paper | null> {
+  const url = addOpenAlexCredentials(new URL(`https://api.openalex.org/works/https://doi.org/${doi}`));
+  const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 3600 } });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error("OpenAlex is temporarily unavailable");
+  return normalizeOpenAlexWork((await response.json()) as OpenAlexWork);
+}
+
+async function getOpenAlexPaperByArxiv(arxivId: string): Promise<Paper | null> {
+  const response = await fetch(`https://export.arxiv.org/api/query?id_list=${encodeURIComponent(arxivId.replace(/v\d+$/i, ""))}`, { headers: { Accept: "application/atom+xml" }, next: { revalidate: 86400 } });
+  if (!response.ok) return null;
+  const xml = await response.text();
+  const entry = xml.match(/<entry>([\s\S]*?)<\/entry>/)?.[1];
+  const rawTitle = entry?.match(/<title>([\s\S]*?)<\/title>/)?.[1];
+  if (!rawTitle) return null;
+  const title = decodeXml(rawTitle).replace(/\s+/g, " ").trim();
+  const papers = await searchOpenAlex(title);
+  const normalized = title.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const match = papers.find((paper) => paper.title.toLowerCase().replace(/[^a-z0-9]+/g, "") === normalized) ?? papers[0];
+  return match ? { ...match, arxivId } : null;
+}
+
+async function getOpenAlexPaperByOpenReview(noteId: string): Promise<Paper | null> {
+  const response = await fetch(`https://api2.openreview.net/notes?id=${encodeURIComponent(noteId)}`, { headers: { Accept: "application/json" }, next: { revalidate: 86400 } });
+  if (!response.ok) return null;
+  const payload = await response.json() as { notes?: Array<{ content?: { title?: string | { value?: string } } }> };
+  const titleValue = payload.notes?.[0]?.content?.title;
+  const title = typeof titleValue === "string" ? titleValue : titleValue?.value;
+  if (!title) return null;
+  const papers = await searchOpenAlex(title);
+  return papers[0] ? { ...papers[0], openReviewId: noteId } : null;
+}
+
+function decodeXml(value: string) {
+  return value.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
 
 export async function getOpenAlexPaper(id: string): Promise<Paper | null> {

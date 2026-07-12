@@ -1,5 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
-import { ensureDbSchema, getDb } from ".";
+import { ensureDbSchema, getD1, getDb } from ".";
 import { upsertProfile } from "./helpers";
 import { logs, papers, profiles, readingEntries } from "./schema";
 import type { PaperLog } from "../lib/types";
@@ -29,11 +29,34 @@ export async function getReaderBySlug(slug: string, viewerEmail?: string) {
     venue: papers.venue, topic: papers.topic, createdAt: readingEntries.createdAt,
   }).from(readingEntries).innerJoin(papers, eq(readingEntries.paperId, papers.id))
     .where(and(eq(readingEntries.userEmail, profile.userEmail))).orderBy(desc(readingEntries.createdAt));
+  const social = await getD1().prepare(`SELECT
+    (SELECT COUNT(*) FROM follows WHERE following_email = ?) AS followerCount,
+    (SELECT COUNT(*) FROM follows WHERE follower_email = ?) AS followingCount,
+    (SELECT COUNT(*) FROM follows WHERE follower_email = ? AND following_email = ?) AS viewerFollowing`)
+    .bind(profile.userEmail, profile.userEmail, viewerEmail ?? "", profile.userEmail).first<{ followerCount: number; followingCount: number; viewerFollowing: number }>();
+  const listRows = await getD1().prepare(`SELECT l.id, l.name, l.description, l.is_public AS isPublic, i.paper_id AS paperId, i.note,
+    p.title, p.authors_json AS authorsJson, p.publication_year AS year, p.venue, p.topic
+    FROM paper_lists l LEFT JOIN paper_list_items i ON i.list_id = l.id LEFT JOIN papers p ON p.id = i.paper_id
+    WHERE l.user_email = ? AND (l.is_public = 1 OR ? = ?) ORDER BY l.updated_at DESC, i.created_at DESC`)
+    .bind(profile.userEmail, viewerEmail ?? "", profile.userEmail).all<Record<string, unknown>>();
+  const lists = new Map<number, { id: number; name: string; description: string; isPublic: boolean; items: Array<{ paper: ReturnType<typeof paperFromRow>; note: string }> }>();
+  for (const row of listRows.results) {
+    const listId = Number(row.id);
+    if (!lists.has(listId)) lists.set(listId, { id: listId, name: String(row.name), description: String(row.description ?? ""), isPublic: Boolean(row.isPublic), items: [] });
+    if (row.paperId) lists.get(listId)!.items.push({ paper: paperFromRow({ paperId: String(row.paperId), title: String(row.title), authorsJson: String(row.authorsJson), year: row.year == null ? null : Number(row.year), venue: String(row.venue), topic: String(row.topic) }), note: String(row.note ?? "") });
+  }
   return {
     displayName: profile.displayName,
     slug: profile.slug,
+    bio: profile.bio,
+    affiliation: profile.affiliation,
+    interests: JSON.parse(profile.interestsJson) as string[],
+    followerCount: social?.followerCount ?? 0,
+    followingCount: social?.followingCount ?? 0,
+    viewerFollowing: Boolean(social?.viewerFollowing),
     isOwner: viewerEmail === profile.userEmail,
     logs: logRows.map((row) => ({ paper: paperFromRow(row), log: { id: row.id, paperId: row.paperId, displayName: profile.displayName, rating: row.rating, status: row.status as PaperLog["status"], comment: row.comment, createdAt: row.createdAt, updatedAt: row.updatedAt, profileSlug: profile.slug } })),
     saved: savedRows.map((row) => ({ paper: paperFromRow(row), savedAt: row.createdAt })),
+    lists: [...lists.values()],
   };
 }

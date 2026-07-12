@@ -1,8 +1,8 @@
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { chatGPTSignInPath, getChatGPTUser } from "../../../../chatgpt-auth";
-import { ensureDbSchema, getDb, rateLimit } from "../../../../../db";
+import { ensureDbSchema, getD1, getDb, rateLimit } from "../../../../../db";
 import { upsertPaper, upsertProfile } from "../../../../../db/helpers";
-import { logs, profiles } from "../../../../../db/schema";
+import { logs } from "../../../../../db/schema";
 import type { Paper } from "../../../../../lib/types";
 
 const allowedStatuses = new Set(["first-impression", "skimmed", "read", "studied", "ran-code"]);
@@ -12,28 +12,26 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const viewer = await getChatGPTUser();
     await ensureDbSchema();
-    const rows = await getDb().select({
-      id: logs.id,
-      paperId: logs.paperId,
-      displayName: logs.displayName,
-      rating: logs.rating,
-      status: logs.status,
-      comment: logs.comment,
-      createdAt: logs.createdAt,
-      updatedAt: logs.updatedAt,
-      profileSlug: profiles.slug,
-    }).from(logs).leftJoin(profiles, eq(logs.userEmail, profiles.userEmail)).where(eq(logs.paperId, id)).orderBy(desc(logs.updatedAt));
-    return Response.json({ logs: rows.map((row) => ({ ...row, isOwner: Boolean(viewer && row.profileSlug && row.profileSlug === makeOwnerSlug(viewer.email, viewer.displayName)) })) });
+    const result = await getD1().prepare(`SELECT l.id, l.paper_id AS paperId, l.user_email AS userEmail, l.display_name AS displayName,
+      l.rating, l.status, l.comment, l.created_at AS createdAt, l.updated_at AS updatedAt, p.slug AS profileSlug,
+      (SELECT COUNT(*) FROM helpful_votes hv WHERE hv.log_id = l.id) AS helpfulCount,
+      (SELECT COUNT(*) FROM replies r WHERE r.log_id = l.id) AS replyCount,
+      (SELECT COUNT(*) FROM helpful_votes hv2 WHERE hv2.log_id = l.id AND hv2.user_email = ?) AS viewerHelpful
+      FROM logs l LEFT JOIN profiles p ON p.user_email = l.user_email WHERE l.paper_id = ? ORDER BY l.updated_at DESC`)
+      .bind(viewer?.email ?? "", id).all<Record<string, unknown>>();
+    const replyRows = await getD1().prepare(`SELECT r.id, r.log_id AS logId, r.paper_id AS paperId, r.user_email AS userEmail,
+      r.display_name AS displayName, r.comment, r.author_response AS authorResponse, r.created_at AS createdAt, p.slug AS profileSlug
+      FROM replies r LEFT JOIN profiles p ON p.user_email = r.user_email WHERE r.paper_id = ? ORDER BY r.created_at ASC`).bind(id).all<Record<string, unknown>>();
+    const repliesByLog = new Map<number, Record<string, unknown>[]>();
+    for (const reply of replyRows.results) {
+      const logId = Number(reply.logId);
+      repliesByLog.set(logId, [...(repliesByLog.get(logId) ?? []), { ...reply, authorResponse: Boolean(reply.authorResponse), isOwner: viewer?.email === reply.userEmail, userEmail: undefined }]);
+    }
+    const claim = viewer ? await getD1().prepare("SELECT id FROM author_claims WHERE paper_id = ? AND user_email = ? AND status = 'approved'").bind(id, viewer.email).first() : null;
+    return Response.json({ canAuthorRespond: Boolean(claim), logs: result.results.map((row) => ({ ...row, userEmail: undefined, helpfulCount: Number(row.helpfulCount), replyCount: Number(row.replyCount), viewerHelpful: Boolean(row.viewerHelpful), isOwner: viewer?.email === row.userEmail, replies: repliesByLog.get(Number(row.id)) ?? [] })) });
   } catch {
     return Response.json({ logs: [] });
   }
-}
-
-function makeOwnerSlug(email: string, displayName: string) {
-  const base = displayName.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 28) || "reader";
-  let hash = 2166136261;
-  for (const character of email.toLowerCase()) { hash ^= character.charCodeAt(0); hash = Math.imul(hash, 16777619); }
-  return `${base}-${(hash >>> 0).toString(36).slice(0, 6)}`;
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -59,6 +57,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const [saved] = await db.insert(logs).values({ paperId: id, userEmail: user.email, displayName: user.displayName, rating, status, comment })
     .onConflictDoUpdate({ target: [logs.userEmail, logs.paperId], set: { displayName: user.displayName, rating, status, comment, updatedAt: new Date().toISOString() } }).returning();
   const profileSlug = await upsertProfile(user.email, user.displayName);
+  await getD1().prepare(`INSERT INTO notifications (user_email, actor_email, type, paper_id, log_id)
+    SELECT follower_email, ?, 'new-log', ?, ? FROM follows WHERE following_email = ? AND follower_email != ?`)
+    .bind(user.email, id, saved.id, user.email, user.email).run();
   return Response.json({ log: { ...saved, profileSlug } }, { status: 201 });
 }
 
@@ -72,6 +73,8 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   const current = await getDb().select({ id: logs.id, email: logs.userEmail }).from(logs).where(eq(logs.paperId, id));
   const match = current.find((entry) => entry.email === user.email);
   if (!match) return Response.json({ error: "Log not found" }, { status: 404 });
+  await getD1().prepare("DELETE FROM helpful_votes WHERE log_id = ?").bind(match.id).run();
+  await getD1().prepare("DELETE FROM replies WHERE log_id = ?").bind(match.id).run();
   await getDb().delete(logs).where(eq(logs.id, match.id));
   return Response.json({ deleted: true, remaining: Math.max(0, owned.length - 1) });
 }

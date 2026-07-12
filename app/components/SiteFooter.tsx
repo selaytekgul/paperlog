@@ -3,7 +3,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <a className="brand footer-brand" href="/"><span className="brand-mark" aria-hidden="true" /><span className="brand-name">Paperlog</span></a>
       <p>Papers and what people think about them. Independent limited alpha.</p>
-      <nav aria-label="Legal and support"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/guidelines">Guidelines</a><a href="/copyright">Copyright</a><a href="/contact">Contact</a></nav>
+      <nav aria-label="Legal and support"><a href="/explore">Explore</a><a href="/alpha">Alpha</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/guidelines">Guidelines</a><a href="/copyright">Copyright</a><a href="/contact">Contact</a></nav>
       <small>Paper metadata supplied by <a href="https://openalex.org" target="_blank" rel="noreferrer">OpenAlex</a>.</small>
     </footer>
   );

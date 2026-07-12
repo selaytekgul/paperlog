@@ -1,8 +1,18 @@
-# vinext-starter
+# Paperlog
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Paperlog is a social reading diary for research papers: find papers, rate them, leave fast reader notes, organize lists, discuss interpretations, and document code/reproducibility experiences.
+
+## Alpha capabilities
+
+- OpenAlex paper search plus direct DOI, arXiv, OpenReview, and OpenAlex ID resolution
+- live rating and log aggregates from the first real rating
+- profiles with bios, affiliations, interests, follows, saved papers, and public lists
+- reader logs with engagement status, helpful votes, replies, reports, and notifications
+- structured reproducibility reports with repository, commit, environment, data, outcome, score, notes, and evidence
+- manually verified paper-author responses
+- metadata/version correction workflow
+- private moderation console, audit trail, rate limits, health endpoint, and JSON backup export
+- account export/deletion, alpha onboarding, legal pages, and responsive/accessibility treatment
 
 ## Prerequisites
 
@@ -18,13 +28,14 @@ npm run build
 
 This starter does not use `wrangler.jsonc`.
 
-## Included Shape
+## Project shape
 
 - edit site code under `app/`
 - `.openai/hosting.json` declares optional Sites D1 and R2 bindings
 - `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
+- `db/schema.ts` defines the D1 persistence model
+- `app/api/` contains public reads, authenticated writes, and admin operations
+- `app/alpha` is the five-person test script
 - `drizzle.config.ts` supports local migration generation when needed
 
 ## Workspace Auth Headers
@@ -85,7 +96,7 @@ or enforce explicit server-side membership or allowlist checks.
 Use SIWC for account pages, user-specific dashboards, saved records, and write
 actions tied to the current ChatGPT user. Leave public content anonymous.
 
-## Useful Commands
+## Useful commands
 
 - `npm run dev`: start local development
 - `npm run build`: verify the vinext build output
@@ -96,3 +107,7 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
 - [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+
+## External launch handoffs
+
+The application code cannot complete DNS validation for `paperlog.net`, obtain the operator's private OpenAlex API key, or replace formal legal review. Set `OPENALEX_API_KEY` in hosting for normal API capacity, complete the registered DNS records, and have the policies reviewed before a broad public launch.

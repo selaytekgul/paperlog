@@ -15,6 +15,20 @@
       "when": 1783869937214,
       "tag": "0001_deep_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1783872149390,
+      "tag": "0002_nifty_gorgon",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1783872248084,
+      "tag": "0003_tired_arclight",
+      "breakpoints": true
     }
   ]
 }

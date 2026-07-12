@@ -30,6 +30,10 @@ export async function upsertPaper(paper: Paper) {
     landingPageUrl: paper.landingPageUrl,
     pdfUrl: paper.pdfUrl,
     topic: paper.topic,
+    arxivId: paper.arxivId ?? null,
+    openReviewId: paper.openReviewId ?? null,
+    normalizedTitle: paper.title.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim(),
+    metadataUpdatedAt: new Date().toISOString(),
   }).onConflictDoUpdate({ target: papers.id, set: {
     title: paper.title,
     authorsJson: JSON.stringify(paper.authors),
@@ -39,5 +43,9 @@ export async function upsertPaper(paper: Paper) {
     landingPageUrl: paper.landingPageUrl,
     pdfUrl: paper.pdfUrl,
     topic: paper.topic,
+    arxivId: paper.arxivId ?? null,
+    openReviewId: paper.openReviewId ?? null,
+    normalizedTitle: paper.title.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim(),
+    metadataUpdatedAt: new Date().toISOString(),
   } });
 }
