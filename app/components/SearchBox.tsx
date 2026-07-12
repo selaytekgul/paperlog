@@ -2,12 +2,14 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import type { Paper } from "../../lib/types";
+import { searchOpenAlexInBrowser } from "../../lib/openalex-browser";
 
 export function SearchBox({ compact = false }: { compact?: boolean }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [notice, setNotice] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
@@ -21,15 +23,31 @@ export function SearchBox({ compact = false }: { compact?: boolean }) {
       setLoading(true);
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(value.trim())}`);
-        const payload = (await response.json()) as { papers?: Paper[] };
-        setResults(payload.papers ?? []);
+        const payload = (await response.json()) as { papers?: Paper[]; source?: string; warning?: string; error?: string };
+        let papers = payload.papers ?? [];
+        if (payload.source === "paperlog" || payload.warning || payload.error) {
+          try {
+            const openAlexPapers = await searchOpenAlexInBrowser(value.trim());
+            papers = [...openAlexPapers, ...papers.filter((local) => !openAlexPapers.some((remote) => remote.id === local.id))];
+            setNotice("OpenAlex results loaded directly.");
+          } catch (caught) { setNotice(caught instanceof Error ? `${caught.message} Showing Paperlog’s saved papers.` : "Showing Paperlog’s saved papers."); }
+        } else setNotice("");
+        setResults(papers);
+      } catch {
+        try { setResults(await searchOpenAlexInBrowser(value.trim())); setNotice("OpenAlex results loaded directly."); }
+        catch { setResults([]); setNotice("Search is temporarily unavailable."); }
       } finally { setLoading(false); }
     }, 280);
   }
 
+  async function openPaper(paper: Paper) {
+    try { await fetch("/api/papers/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: paper.id }) }); } catch { /* Navigation can still use OpenAlex's direct work lookup. */ }
+    window.location.assign(`/paper/${paper.id}`);
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (results[0]) window.location.href = `/paper/${results[0].id}`;
+    if (results[0]) void openPaper(results[0]);
   }
 
   return (
@@ -47,9 +65,10 @@ export function SearchBox({ compact = false }: { compact?: boolean }) {
       {open && (
         <div className="search-panel">
           {loading && <div className="search-state">Searching the literature…</div>}
+          {!loading && notice && <div className="search-notice">{notice}</div>}
           {!loading && results.length === 0 && <div className="search-state">Search OpenAlex by title, author, DOI, arXiv ID, or OpenReview URL.</div>}
           {!loading && results.map((paper) => (
-            <button className="search-result" type="button" key={paper.id} onClick={() => { window.location.href = `/paper/${paper.id}`; }}>
+            <button className="search-result" type="button" key={paper.id} onClick={() => { void openPaper(paper); }}>
               <strong>{paper.title}</strong>
               <span>{paper.authors.slice(0, 3).join(", ")}{paper.authors.length > 3 ? " et al." : ""} · {paper.year ?? "Unpublished"}</span>
             </button>
