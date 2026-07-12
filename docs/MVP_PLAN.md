@@ -1,6 +1,6 @@
 # Paperlog MVP plan
 
-> Status: implemented through the five-person alpha milestone on 2026-07-12. The next work should be driven by observed tester behavior rather than additional speculative features.
+> Status: the public MVP is deployed at `paperlog.net` and is ready for a controlled friend alpha as of 2026-07-12. The next work should be driven by observed tester behavior rather than additional speculative features.
 
 ## Product promise
 
@@ -17,13 +17,20 @@ A visitor can search the scholarly literature through OpenAlex, open a paper pro
 3. Community: add 1–5 star ratings, reader notes, engagement context, and public paper logs.
 4. Identity: use managed sign-in for attributed writing and a minimal reader profile.
 5. Trust: validate input, rate-limit later, expose reporting/moderation before a wider public launch.
-6. Alpha: invite 10–20 readers from computer graphics, geometry processing, and adjacent fields.
+6. Alpha: begin with five invited adult readers from computer graphics, geometry processing, and adjacent fields; expand only after the first feedback cycle.
 
-## Explicitly postponed
+## Implemented beyond the initial MVP
 
-- GitHub verification and structured reproduction reports
+- Structured code and reproducibility experience reports
+- Public lists, follows, helpful votes, replies, and notifications
+- Metadata corrections and author-claim review
+- Reports, moderation, account export/deletion, and an admin console
+- Resilient OpenAlex search with a small local paper cache
+
+## Still postponed
+
 - Multiple scientific-quality rating dimensions
-- Paper-version merging and editorial workflows
+- Automated paper-version merging and full editorial workflows
 - Native mobile applications
 - AI summaries and recommendation algorithms
 - PDF hosting, private messages, and journal-club tools
@@ -44,8 +51,9 @@ A visitor can search the scholarly literature through OpenAlex, open a paper pro
 - [x] Add reports, moderation records, contact requests, and rate limits.
 - [x] Publish alpha privacy, terms, community, and copyright notices.
 - [x] Keep public reading separate from authenticated writing.
+- [x] Point `paperlog.net` and `www.paperlog.net` to the published site.
+- [x] Repair the overlapping search-results presentation.
 - [ ] Add a free OpenAlex API key to the hosted environment.
-- [ ] Point `paperlog.net` DNS records to the published site.
 - [ ] Invite five adult testers and collect structured feedback.
 
 ## Tester script
