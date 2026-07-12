@@ -40,7 +40,11 @@ export async function searchOpenAlexInBrowser(query: string): Promise<Paper[]> {
     : doi
       ? new URL(`https://api.openalex.org/works/https://doi.org/${doi}`)
       : new URL("https://api.openalex.org/works");
-  if (!workId && !doi) { url.searchParams.set("search", value); url.searchParams.set("per-page", "8"); }
+  if (!workId && !doi) {
+    url.searchParams.set("search", value);
+    url.searchParams.set("per-page", "8");
+    url.searchParams.set("select", "id,display_name,publication_year,cited_by_count,doi,authorships,primary_location,best_oa_location,primary_topic,ids");
+  }
   url.searchParams.set("mailto", "hello@paperlog.net");
   const response = await fetch(url, { headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error(response.status === 429 ? "OpenAlex’s search allowance is temporarily exhausted." : "OpenAlex search is unavailable.");

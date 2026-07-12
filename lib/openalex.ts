@@ -88,6 +88,7 @@ export async function searchOpenAlex(query: string): Promise<Paper[]> {
   const url = new URL("https://api.openalex.org/works");
   url.searchParams.set("search", direct.kind === "arxiv" || direct.kind === "openreview" ? direct.value : query);
   url.searchParams.set("per-page", "8");
+  url.searchParams.set("select", "id,display_name,publication_year,cited_by_count,doi,authorships,primary_location,best_oa_location,primary_topic,ids");
   addOpenAlexCredentials(url);
   const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 300 } });
   if (!response.ok) throw new Error("OpenAlex search is temporarily unavailable");
