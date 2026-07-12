@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { getChatGPTUser } from "../chatgpt-auth";
 import { SiteHeader } from "../components/SiteHeader";
 import { SiteFooter } from "../components/SiteFooter";
+
+export const metadata: Metadata = {
+  title: "Join the Paperlog alpha",
+  description: "Help test Paperlog by finding, rating, and discussing research papers.",
+  alternates: { canonical: "/alpha" },
+};
 
 export default async function AlphaPage() {
   const user = await getChatGPTUser();

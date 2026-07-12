@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { PolicyPage } from "../components/PolicyPage";
+
+export const metadata: Metadata = {
+  title: "Privacy and KVKK notice",
+  description: "How Paperlog processes account, profile, rating, reader-note, and moderation data.",
+  alternates: { canonical: "/privacy" },
+};
 
 export default function PrivacyPage() {
   return <PolicyPage title="Privacy and KVKK notice">

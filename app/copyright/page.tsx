@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { PolicyPage } from "../components/PolicyPage";
+
+export const metadata: Metadata = {
+  title: "Copyright and content complaints",
+  description: "How Paperlog handles bibliographic metadata, user submissions, copyright notices, and removal requests.",
+  alternates: { canonical: "/copyright" },
+};
 
 export default function CopyrightPage() {
   return <PolicyPage title="Copyright and content complaints">

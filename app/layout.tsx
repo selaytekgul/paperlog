@@ -3,6 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://paperlog.net"),
+  applicationName: "Paperlog",
   title: {
     default: "Paperlog — Papers and what people think about them",
     template: "%s · Paperlog",
@@ -11,6 +12,8 @@ export const metadata: Metadata = {
     "A social reading diary for research papers. Rate papers, leave reader notes, and discover what others are reading.",
   openGraph: {
     type: "website",
+    url: "https://paperlog.net/",
+    locale: "en_US",
     siteName: "Paperlog",
     title: "Paperlog — Papers and what people think about them",
     description: "A social reading diary for research papers.",
@@ -22,6 +25,27 @@ export const metadata: Metadata = {
     description: "A social reading diary for research papers.",
     images: ["/og.png"],
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
+
+const websiteStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Paperlog",
+  alternateName: "Paperlog research reading diary",
+  url: "https://paperlog.net/",
+  description:
+    "A social reading diary for research papers, reader notes, ratings, and reproducibility experiences.",
 };
 
 export default function RootLayout({
@@ -29,6 +53,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteStructuredData).replace(/</g, "\\u003c"),
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

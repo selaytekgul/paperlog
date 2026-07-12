@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "../chatgpt-auth";
@@ -7,6 +8,11 @@ import { contactRequests, logs, papers, reports } from "../../db/schema";
 import { isPaperlogAdmin } from "../../lib/admin";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Administration",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminPage() {
   const user = await requireChatGPTUser("/admin");

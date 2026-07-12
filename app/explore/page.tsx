@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getChatGPTUser } from "../chatgpt-auth";
 import { SiteHeader } from "../components/SiteHeader";
 import { SiteFooter } from "../components/SiteFooter";
@@ -6,6 +7,12 @@ import { searchOpenAlex } from "../../lib/openalex";
 import type { Paper, PaperSummary } from "../../lib/types";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Explore research papers",
+  description: "Find research papers by title, author, DOI, arXiv ID, or OpenReview URL and discover what readers thought.",
+  alternates: { canonical: "/explore" },
+};
 
 async function communityPapers(): Promise<Array<Paper & { summary: PaperSummary }>> {
   await ensureDbSchema();

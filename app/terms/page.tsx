@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { PolicyPage } from "../components/PolicyPage";
+
+export const metadata: Metadata = {
+  title: "Alpha terms of use",
+  description: "Terms for participating in the Paperlog research-reading community alpha.",
+  alternates: { canonical: "/terms" },
+};
 
 export default function TermsPage() {
   return <PolicyPage title="Alpha terms of use">

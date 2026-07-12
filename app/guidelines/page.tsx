@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { PolicyPage } from "../components/PolicyPage";
+
+export const metadata: Metadata = {
+  title: "Community guidelines",
+  description: "Guidelines for constructive, evidence-aware discussion of research papers on Paperlog.",
+  alternates: { canonical: "/guidelines" },
+};
 
 export default function GuidelinesPage() {
   return <PolicyPage title="Community guidelines">
