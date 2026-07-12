@@ -98,6 +98,8 @@ export async function ensureDbSchema() {
   await ensureColumn("papers", "openreview_id", "TEXT");
   await ensureColumn("papers", "normalized_title", "TEXT");
   await ensureColumn("papers", "metadata_updated_at", "TEXT");
+  await ensureColumn("papers", "abstract", "TEXT NOT NULL DEFAULT ''");
+  await ensureColumn("papers", "cited_by_count", "INTEGER NOT NULL DEFAULT 0");
   initialized = true;
 }
 

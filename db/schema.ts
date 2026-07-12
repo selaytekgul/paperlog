@@ -11,6 +11,8 @@ export const papers = sqliteTable("papers", {
   landingPageUrl: text("landing_page_url"),
   pdfUrl: text("pdf_url"),
   topic: text("topic").notNull().default("Research"),
+  abstract: text("abstract").notNull().default(""),
+  citedByCount: integer("cited_by_count").notNull().default(0),
   arxivId: text("arxiv_id"),
   openReviewId: text("openreview_id"),
   normalizedTitle: text("normalized_title"),
