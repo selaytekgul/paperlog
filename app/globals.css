@@ -249,6 +249,7 @@ a { color: inherit; text-decoration: none; }
 .form-note { color: var(--muted); font-size: 11px; }
 .form-error { margin-top: 12px; color: #9e3424; font-size: 13px; }
 .success-message { padding: 12px 14px; border-radius: 6px; background: var(--green-soft); color: var(--green); font-weight: 700; }
+.paper-save-notice { width: calc(100% - 64px); max-width: 1056px; margin: 0 auto 4px; }
 .empty-state { padding: 34px 0; color: var(--muted); font: 17px Georgia, serif; }
 .empty-state.compact { padding: 18px 0; font-size: 14px; }
 .honest-empty { margin-top: 22px; padding: 25px; border: 1px dashed var(--line); background: rgba(255,253,248,.45); }
