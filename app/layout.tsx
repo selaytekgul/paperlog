@@ -36,6 +36,9 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  verification: {
+    google: "Rph5oe1QGPGDaEewAffVrMKCJr_UuOxpCStqW7vE8BI",
+  },
 };
 
 const websiteStructuredData = {
