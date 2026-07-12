@@ -27,6 +27,13 @@ function abstractFromIndex(index?: Record<string, number[]>): string {
   return words.sort((a, b) => a[0] - b[0]).map(([, word]) => word).join(" ");
 }
 
+function addOpenAlexCredentials(url: URL) {
+  url.searchParams.set("mailto", "hello@paperlog.net");
+  const apiKey = process.env.OPENALEX_API_KEY?.trim();
+  if (apiKey) url.searchParams.set("api_key", apiKey);
+  return url;
+}
+
 export function normalizeOpenAlexWork(work: OpenAlexWork): Paper {
   const title = work.display_name ?? work.title ?? "Untitled paper";
   const authors = work.authorships?.map((entry) => entry.author?.display_name).filter((name): name is string => Boolean(name)) ?? [];
@@ -50,7 +57,7 @@ export async function searchOpenAlex(query: string): Promise<Paper[]> {
   const url = new URL("https://api.openalex.org/works");
   url.searchParams.set("search", query);
   url.searchParams.set("per-page", "8");
-  url.searchParams.set("mailto", "hello@paperlog.net");
+  addOpenAlexCredentials(url);
   const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 300 } });
   if (!response.ok) throw new Error("OpenAlex search is temporarily unavailable");
   const payload = (await response.json()) as { results?: OpenAlexWork[] };
@@ -59,7 +66,8 @@ export async function searchOpenAlex(query: string): Promise<Paper[]> {
 
 export async function getOpenAlexPaper(id: string): Promise<Paper | null> {
   if (!/^W\d+$/.test(id)) return null;
-  const response = await fetch(`https://api.openalex.org/works/${id}?mailto=hello@paperlog.net`, {
+  const url = addOpenAlexCredentials(new URL(`https://api.openalex.org/works/${id}`));
+  const response = await fetch(url, {
     headers: { Accept: "application/json" },
     next: { revalidate: 3600 },
   });

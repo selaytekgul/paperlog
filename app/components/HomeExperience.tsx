@@ -1,18 +1,14 @@
 import type { ChatGPTUser } from "../chatgpt-auth";
 import { SearchBox } from "./SearchBox";
 import { SiteHeader } from "./SiteHeader";
+import { RecentActivity } from "./RecentActivity";
+import { SiteFooter } from "./SiteFooter";
 
 const featured = [
-  { id: "W2626778328", topic: "Machine learning", year: 2017, title: "Attention Is All You Need", authors: "Ashish Vaswani, Noam Shazeer, Niki Parmar et al.", rating: "4.6", logs: 1842 },
-  { id: "W1626653188", topic: "Geometry", year: 2003, title: "Discrete Differential-Geometry Operators for Triangulated 2-Manifolds", authors: "Mark Meyer, Mathieu Desbrun, Peter Schröder et al.", rating: "4.4", logs: 231 },
-  { id: "W2235901111", topic: "Computer graphics", year: 1997, title: "Surface Simplification Using Quadric Error Metrics", authors: "Michael Garland and Paul S. Heckbert", rating: "4.7", logs: 406 },
-  { id: "W2194775991", topic: "Computer vision", year: 2016, title: "Deep Residual Learning for Image Recognition", authors: "Kaiming He, Xiangyu Zhang, Shaoqing Ren et al.", rating: "4.5", logs: 1289 },
-];
-
-const notes = [
-  { initials: "MK", name: "Mina K.", context: "Studied · ★★★★★", quote: "The rare foundational paper that still feels generous to the reader. Figure 2 did more for me than three survey papers.", paper: "Attention Is All You Need", color: "" },
-  { initials: "DS", name: "Deniz S.", context: "Ran the code · ★★★★☆", quote: "The method holds up beautifully, but rebuilding the environment was half the experiment.", paper: "Neural 3D Mesh Renderer", color: "green" },
-  { initials: "AR", name: "Ana R.", context: "First impression · ★★★☆☆", quote: "An exciting framing, though I am not yet convinced the evaluation supports the broadest claim.", paper: "Gaussian Splatting", color: "gold" },
+  { id: "W2626778328", topic: "Machine learning", year: 2017, title: "Attention Is All You Need", authors: "Ashish Vaswani, Noam Shazeer, Niki Parmar et al." },
+  { id: "W1626653188", topic: "Geometry", year: 2003, title: "Discrete Differential-Geometry Operators for Triangulated 2-Manifolds", authors: "Mark Meyer, Mathieu Desbrun, Peter Schröder et al." },
+  { id: "W2235901111", topic: "Computer graphics", year: 1997, title: "Surface Simplification Using Quadric Error Metrics", authors: "Michael Garland and Paul S. Heckbert" },
+  { id: "W2194775991", topic: "Computer vision", year: 2016, title: "Deep Residual Learning for Image Recognition", authors: "Kaiming He, Xiangyu Zhang, Shaoqing Ren et al." },
 ];
 
 export function HomeExperience({ user }: { user: ChatGPTUser | null }) {
@@ -49,27 +45,11 @@ export function HomeExperience({ user }: { user: ChatGPTUser | null }) {
                   <div className="paper-meta"><span className="topic-chip">{paper.topic}</span><span>{paper.year}</span></div>
                   <h3 className="paper-title">{paper.title}</h3>
                   <p className="paper-authors">{paper.authors}</p>
-                  <div className="paper-bottom">
-                    <span className="rating">★★★★★ <small>{paper.rating}</small></span>
-                    <span className="log-count">{paper.logs.toLocaleString()} logs</span>
-                  </div>
+                  <div className="paper-bottom"><span className="note-paper">Open paper page</span><span className="log-count">Reader activity shown when available</span></div>
                 </a>
               ))}
             </div>
-            <aside className="activity-column">
-              <h3>Fresh from the margins</h3>
-              <p className="activity-sub">Short notes from people who are reading.</p>
-              {notes.map((note) => (
-                <article className="reader-note" key={note.name}>
-                  <div className="note-user">
-                    <span className={`avatar ${note.color}`}>{note.initials}</span>
-                    <div><div className="user-name">{note.name}</div><div className="note-context">{note.context}</div></div>
-                  </div>
-                  <blockquote>“{note.quote}”</blockquote>
-                  <a className="note-paper" href="#discover">on {note.paper}</a>
-                </article>
-              ))}
-            </aside>
+            <RecentActivity />
           </div>
           <div className="value-strip">
             <div className="value-item"><strong>Log what you read</strong><p>A star rating and one honest sentence are enough. Your diary grows with your research life.</p></div>
@@ -78,6 +58,7 @@ export function HomeExperience({ user }: { user: ChatGPTUser | null }) {
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }

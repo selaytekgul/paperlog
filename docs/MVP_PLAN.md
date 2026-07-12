@@ -33,3 +33,19 @@ A visitor can search the scholarly literature through OpenAlex, open a paper pro
 - Readers return to log a second paper.
 - Paper pages gain perspectives from more than one person.
 - Informal notes feel welcome without being confused with formal peer review.
+
+## Five-person alpha checklist
+
+- [x] Remove fictional activity and fabricated rating counts.
+- [x] Persist real ratings, reader notes, profiles, and Want to read entries.
+- [x] Allow users to edit/delete logs, export data, and delete accounts.
+- [x] Add reports, moderation records, contact requests, and rate limits.
+- [x] Publish alpha privacy, terms, community, and copyright notices.
+- [x] Keep public reading separate from authenticated writing.
+- [ ] Add a free OpenAlex API key to the hosted environment.
+- [ ] Point `paperlog.net` DNS records to the published site.
+- [ ] Invite five adult testers and collect structured feedback.
+
+## Tester script
+
+Each tester should find five papers, save one for later, rate two, leave one reader note, edit that note, open another reader profile, submit one test report, and send one feedback request. The operator should resolve the test report and contact request in `/admin`.

@@ -20,4 +20,13 @@ export type PaperLog = {
   status: "first-impression" | "skimmed" | "read" | "studied" | "ran-code";
   comment: string;
   createdAt: string;
+  updatedAt?: string;
+  profileSlug?: string | null;
+  isOwner?: boolean;
+};
+
+export type ProfilePaperEntry = {
+  paper: Pick<Paper, "id" | "title" | "authors" | "year" | "venue" | "topic">;
+  log?: PaperLog;
+  savedAt?: string;
 };
