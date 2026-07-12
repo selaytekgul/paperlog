@@ -2,6 +2,15 @@
 
 Paperlog is a social reading diary for research papers: find papers, rate them, leave fast reader notes, organize lists, discuss interpretations, and document code/reproducibility experiences.
 
+Live MVP: [paperlog.net](https://paperlog.net)
+
+## Project records
+
+- [Current MVP and alpha plan](docs/MVP_PLAN.md)
+- [Next-steps roadmap](docs/NEXT_STEPS.md)
+- [Friend testing guide](docs/FRIEND_TEST_GUIDE.md)
+- [2026-07-12 build and operations handoff](docs/HANDOFF_2026-07-12.md)
+
 ## Alpha capabilities
 
 - OpenAlex paper search plus direct DOI, arXiv, OpenReview, and OpenAlex ID resolution
@@ -110,4 +119,4 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 ## External launch handoffs
 
-The application code cannot complete DNS validation for `paperlog.net`, obtain the operator's private OpenAlex API key, or replace formal legal review. Set `OPENALEX_API_KEY` in hosting for normal API capacity, complete the registered DNS records, and have the policies reviewed before a broad public launch.
+The custom domain is connected and the MVP is publicly reachable. The application code cannot obtain the operator's private OpenAlex API key or replace formal legal review. Set `OPENALEX_API_KEY` in hosting for normal API capacity, keep exports of the production database, and have the policies reviewed before a broad public launch.
