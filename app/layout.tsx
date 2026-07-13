@@ -10,6 +10,22 @@ export const metadata: Metadata = {
   },
   description:
     "A social reading diary for research papers. Rate papers, leave reader notes, and discover what others are reading.",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Paperlog",
+    statusBarStyle: "default",
+  },
   openGraph: {
     type: "website",
     url: "https://paperlog.net/",
@@ -43,12 +59,30 @@ export const metadata: Metadata = {
 
 const websiteStructuredData = {
   "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Paperlog",
-  alternateName: "Paperlog research reading diary",
-  url: "https://paperlog.net/",
-  description:
-    "A social reading diary for research papers, reader notes, ratings, and reproducibility experiences.",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://paperlog.net/#website",
+      name: "Paperlog",
+      alternateName: "Paperlog research reading diary",
+      url: "https://paperlog.net/",
+      description:
+        "A social reading diary for research papers, reader notes, ratings, and reproducibility experiences.",
+      publisher: { "@id": "https://paperlog.net/#organization" },
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://paperlog.net/#organization",
+      name: "Paperlog",
+      url: "https://paperlog.net/",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://paperlog.net/icon-512.png",
+        width: 512,
+        height: 512,
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
