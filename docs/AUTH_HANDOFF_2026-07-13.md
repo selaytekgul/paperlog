@@ -4,12 +4,14 @@ This document records the Google and GitHub authentication work completed on 13 
 
 ## Current status
 
-- The authentication implementation is complete locally and is pushed to the public GitHub repository on `main`.
+- The authentication implementation is complete, deployed publicly, and pushed to the public GitHub repository on `main`.
 - Implementation commit: `77076006f233d6cb7aebe87506f0a0e73fe3c50f` (`Add Google and GitHub authentication`).
-- The Google/GitHub code has **not** been deployed to the public website. The currently live Paperlog version remains unchanged.
-- The GitHub OAuth application form was prepared but not submitted. No GitHub client ID or secret was created.
-- The Google Cloud project form was prepared but not submitted. No Google project, OAuth client ID, or secret was created.
-- Creating persistent provider credentials and publishing a public Sites deployment require explicit operator confirmation.
+- Deployed source commit: `6e25cecc0b7744b58e25606d6cfc2b59010af852`.
+- OpenAI Sites version: `15` (`appgprj_6a53a3fd6938819181f36e66f7b5e0e6~appgver_2179774e7758819195fc7982f45b7e1a`).
+- Public deployment: `appgdep_6a54c3e9b3408191bf0c1a13e1e105e7`, using protected environment revision `3`.
+- The canonical site is live at `https://paperlog.net`; the Sites address is `https://paperlog.selorey.chatgpt.site`.
+- A dedicated Google Cloud project (`paperlog-502309`) and GitHub OAuth app (`3725675`) were created for Paperlog.
+- Google OAuth publishing status is **In production** for an external audience.
 
 ## What was implemented
 
@@ -74,23 +76,27 @@ The following records were updated to match the implementation:
 - `.env.example`
 - `README.md`
 
-## Hosting configuration already prepared
+## Hosting configuration
 
 The protected OpenAI Sites environment contains:
 
 - `BETTER_AUTH_SECRET` as a secret value
 - `BETTER_AUTH_URL=https://paperlog.net`
+- `GOOGLE_CLIENT_ID` as an environment variable
+- `GOOGLE_CLIENT_SECRET` as a protected secret
+- `GITHUB_CLIENT_ID` as an environment variable
+- `GITHUB_CLIENT_SECRET` as a protected secret
 
-The secret value is not present in Git, local documentation, command output, or this handoff record. Adding those variables did not deploy a new site version.
+The secret values are not present in Git, local documentation, or this handoff record. Provider credentials were transferred through a temporary permission-restricted file, stored in Sites, and removed locally immediately afterward. All client secrets must remain protected Sites secrets and must never be committed to Git.
 
-The following provider variables are still absent and must be created after the provider apps exist:
+The provider configuration uses these public URLs:
 
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `GITHUB_CLIENT_ID`
-- `GITHUB_CLIENT_SECRET`
+- Homepage: `https://paperlog.net`
+- Privacy policy: `https://paperlog.net/privacy`
+- Terms: `https://paperlog.net/terms`
+- Authorized domain: `paperlog.net`
 
-All client secrets must be stored as protected Sites secrets and must never be committed to Git.
+Google currently indicates that the branding itself can optionally be submitted for verification. This is separate from the production OAuth publishing status and does not block the tested basic profile/email sign-in flow.
 
 ## Verification completed
 
@@ -102,6 +108,12 @@ The implementation passed:
 - `git diff --check`
 - local rendering of the unified sign-in page with all three providers enabled through dummy local credentials
 - a local Google OAuth start request returning HTTP 200, the correct callback path, a short-lived state cookie, and PKCE parameters
+- live `/signin` rendering with Google, GitHub, and ChatGPT options
+- live `/api/health` returning HTTP 200 with the database connected
+- live Google and GitHub OAuth-start requests using the exact production callbacks and PKCE S256
+- live ChatGPT sign-in routing to the managed OpenAI authorization service
+- end-to-end Google sign-in, sign-out, GitHub sign-in, and sign-out on `paperlog.net`
+- verified same-email linking: Google and GitHub returned to the same Paperlog profile instead of creating duplicate user profiles
 
 The initially tested authentication package version was rejected after an audit found published OAuth and account-linking advisories. The project was upgraded to patched `better-auth` 1.6.23 before commit. The final `npm audit --omit=dev` result contained seven moderate transitive findings and no high or critical finding. The forced suggestions would install incompatible or obsolete versions and were not applied.
 
@@ -117,26 +129,18 @@ The initially tested authentication package version was rejected after an audit 
 
 Additional existing files were updated for identity integration, local environment simulation, account controls, policies, tests, and documentation.
 
-## Safe continuation checklist
+## Remaining safe continuation checklist
 
-Do not deploy until all of the following steps are complete:
-
-1. Obtain explicit operator confirmation to create persistent OAuth credentials and publish a public version.
-2. Submit the prepared GitHub OAuth application for Paperlog.
-3. Create a dedicated Google Cloud project for Paperlog; do not reuse an unrelated project.
-4. Configure the Google OAuth consent screen with the Paperlog name, `paperlog.net`, the privacy URL, the terms URL, and the minimum identity scopes.
-5. Create a Google web OAuth client with the exact callback listed above.
-6. Store all four provider values in the protected Sites environment; mark the two client secrets as secret.
-7. Confirm the source commit to deploy and create a saved Sites version from that exact pushed state.
-8. Obtain public-deployment approval and deploy the saved version.
-9. Test Google, GitHub, and ChatGPT sign-in separately on `https://paperlog.net`.
-10. With a disposable non-admin account, verify rating persistence across sign-in, sign-out, export, and permanent deletion.
-11. Confirm that an unconfigured or temporarily unavailable external provider does not break ChatGPT sign-in or public reading.
+1. With a disposable non-admin account, verify rating persistence across sign-in and sign-out, then test account export and permanent deletion. Do not use the owner's real account because deletion also removes its Paperlog activity.
+2. Confirm periodically that Google, GitHub, and ChatGPT sign-in still work after provider or platform changes.
+3. Monitor Sites and authentication errors without logging tokens, secrets, or full authorization URLs.
+4. Decide later whether to submit Google branding verification. The current basic profile/email production sign-in is already working.
+5. Before moving away from Sites, export or migrate the database and reproduce all protected environment variables in the new host without placing secrets in Git.
 
 ## Rollback and recovery
 
-- Git commit `7707600` is the exact implementation source state.
-- The live site has not yet moved to this commit, so no production rollback is currently required.
+- Git commit `7707600` is the exact implementation change; deployed source commit `6e25cec` includes that change plus its initial handoff documentation.
+- Sites version `15` is the verified Google/GitHub production release.
 - If a future deployment fails, redeploy the last verified Sites version before changing DNS or the D1 database.
 - Removing one provider's client ID and secret hides that provider without removing ChatGPT sign-in.
 - Do not delete the existing D1 database or the Sites project while testing authentication.
@@ -149,4 +153,3 @@ Do not deploy until all of the following steps are complete:
 - Environment variable names and callbacks: `.env.example`
 - Data-rights behavior: `app/api/account/route.ts` and `docs/DATA_RIGHTS_AUDIT.md`
 - Protected values: the Sites environment only, never the repository
-
