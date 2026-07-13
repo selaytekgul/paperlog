@@ -137,7 +137,7 @@ export function parsePaperIdentifier(input: string): { kind: "openalex" | "doi" 
   return { kind: "search", value };
 }
 
-async function getOpenAlexPaperByDoi(doi: string): Promise<Paper | null> {
+export async function getOpenAlexPaperByDoi(doi: string): Promise<Paper | null> {
   const url = addOpenAlexCredentials(new URL(`https://api.openalex.org/works/https://doi.org/${doi}`));
   const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 3600 } });
   if (response.status === 404) return null;
