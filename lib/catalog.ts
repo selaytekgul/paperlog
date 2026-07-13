@@ -3,8 +3,11 @@ import { upsertPaper } from "../db/helpers";
 import { ensureDbSchema } from "../db";
 import { getOpenAlexPaper, getOpenAlexPaperByDoi } from "./openalex";
 import { resolveDoiWithFallback } from "./doi";
+import { getPaperPicturePaperByDoi, getPaperPicturePaperById } from "./paper-picture-catalog";
 
 export async function getCatalogPaper(id: string) {
+  const paperPicturePaper = getPaperPicturePaperById(id);
+  if (paperPicturePaper) return paperPicturePaper;
   try {
     const paper = await getOpenAlexPaper(id);
     if (paper) {
@@ -19,6 +22,8 @@ export async function getCatalogPaper(id: string) {
 }
 
 export async function getCatalogPaperByDoi(input: string) {
+  const paperPicturePaper = getPaperPicturePaperByDoi(input);
+  if (paperPicturePaper) return paperPicturePaper;
   return resolveDoiWithFallback(input, {
     lookupRemote: getOpenAlexPaperByDoi,
     lookupStored: getStoredPaperByDoi,
