@@ -112,9 +112,9 @@ async function ensureColumn(table: string, column: string, definition: string) {
 
 export async function rateLimit(actor: string, action: string, maximum: number, windowMinutes: number) {
   await ensureDbSchema();
-  const encoded = new TextEncoder().encode(actor.toLowerCase());
-  const digest = await crypto.subtle.digest("SHA-256", encoded);
-  const actorHash = Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  const actorHash = await hashActor(actor);
+  const retentionCutoff = new Date(Date.now() - 30 * 24 * 60 * 60_000).toISOString();
+  await runtimeEnv.DB.prepare("DELETE FROM activity_events WHERE created_at < ?").bind(retentionCutoff).run();
   const since = new Date(Date.now() - windowMinutes * 60_000).toISOString();
   const count = await runtimeEnv.DB.prepare("SELECT COUNT(*) AS count FROM activity_events WHERE actor_hash = ? AND action = ? AND created_at >= ?")
     .bind(actorHash, action, since).first<{ count: number }>();
@@ -122,6 +122,12 @@ export async function rateLimit(actor: string, action: string, maximum: number, 
   await runtimeEnv.DB.prepare("INSERT INTO activity_events (actor_hash, action, created_at) VALUES (?, ?, ?)")
     .bind(actorHash, action, new Date().toISOString()).run();
   return true;
+}
+
+export async function hashActor(actor: string) {
+  const encoded = new TextEncoder().encode(actor.trim().toLowerCase());
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export function getDb() {

@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
-  return <PolicyPage title="Contact Paperlog"><p>Use this form for alpha feedback, privacy requests, metadata corrections, copyright notices, safety reports, or moderation appeals.</p><ContactForm /></PolicyPage>;
+  return <PolicyPage title="Contact Paperlog" updated="13 July 2026"><p>Use this form for alpha feedback, privacy requests, metadata corrections, copyright notices, safety reports, or moderation appeals.</p><p>For a privacy request, use the email connected to the relevant Paperlog account and explain the action you want. We will verify control of the account or email before disclosing, correcting, or deleting personal data. Signed-in readers can download or immediately delete their Paperlog account from the profile page.</p><ContactForm /></PolicyPage>;
 }

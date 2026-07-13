@@ -10,6 +10,7 @@ Live MVP: [paperlog.net](https://paperlog.net)
 - [Next-steps roadmap](docs/NEXT_STEPS.md)
 - [Friend testing guide](docs/FRIEND_TEST_GUIDE.md)
 - [2026-07-12 build and operations handoff](docs/HANDOFF_2026-07-12.md)
+- [Data-rights implementation audit](docs/DATA_RIGHTS_AUDIT.md)
 
 ## Alpha capabilities
 
