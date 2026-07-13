@@ -115,3 +115,23 @@ test("ships a same-origin DOI redirect endpoint", async () => {
   assert.match(catalog, /lookupRemote: getOpenAlexPaperByDoi/);
   assert.match(catalog, /lookupStored: getStoredPaperByDoi/);
 });
+
+test("keeps every Paper Picture destination available without an OpenAlex request", async () => {
+  const [catalog, routeAlias, paperDetail, known] = await Promise.all([
+    readFile(new URL("../lib/catalog.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/paper/resolve/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/PaperDetail.tsx", import.meta.url), "utf8"),
+    importTypeScriptModule("../lib/paper-picture-catalog.ts"),
+  ]);
+  assert.equal(known.paperPictureCatalog.length, 12);
+  assert.equal(new Set(known.paperPictureCatalog.map((paper) => paper.id)).size, 12);
+  for (const paper of known.paperPictureCatalog) {
+    assert.match(paper.id, /^W\d+$/);
+    assert.equal(known.getPaperPicturePaperById(paper.id)?.title, paper.title);
+    assert.equal(known.getPaperPicturePaperByDoi(paper.doi)?.id, paper.id);
+  }
+  assert.match(catalog, /getPaperPicturePaperById\(id\)/);
+  assert.match(catalog, /getPaperPicturePaperByDoi\(input\)/);
+  assert.match(routeAlias, /export \{ GET \} from "\.\.\/doi\/route"/);
+  assert.match(paperDetail, /paper\.citedByCount >= 0/);
+});
