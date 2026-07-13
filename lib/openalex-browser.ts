@@ -10,6 +10,8 @@ type BrowserOpenAlexWork = {
   ids?: { arxiv?: string; openreview?: string };
 };
 
+type BrowserOpenAlexAuthor = { id?: string; display_name?: string };
+
 function abstractFromIndex(index?: Record<string, number[]>) {
   if (!index) return "";
   const words: Array<[number, string]> = [];
@@ -31,17 +33,41 @@ function normalize(work: BrowserOpenAlexWork): Paper | null {
     openReviewId: work.ids?.openreview?.match(/[?&]id=([^&#]+)/)?.[1] ?? null };
 }
 
+function normalizedName(value: string) {
+  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+async function findExactAuthor(query: string): Promise<string | null> {
+  const url = new URL("https://api.openalex.org/authors");
+  url.searchParams.set("search", query);
+  url.searchParams.set("per-page", "3");
+  url.searchParams.set("select", "id,display_name");
+  url.searchParams.set("mailto", "hello@paperlog.net");
+  const response = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!response.ok) return null;
+  const payload = await response.json() as { results?: BrowserOpenAlexAuthor[] };
+  const expected = normalizedName(query);
+  const author = payload.results?.find((candidate) => candidate.id && candidate.display_name && normalizedName(candidate.display_name) === expected);
+  return author?.id?.split("/").pop() ?? null;
+}
+
 export async function searchOpenAlexInBrowser(query: string): Promise<Paper[]> {
   const value = query.trim();
   const workId = value.match(/(?:openalex\.org\/)?(W\d+)/i)?.[1]?.toUpperCase();
   const doi = value.match(/(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)?(10\.\d{4,9}\/[-._;()/:A-Z0-9]+)/i)?.[1]?.toLowerCase().replace(/[.,;]$/, "");
+  const authorId = !workId && !doi ? await findExactAuthor(value) : null;
   const url = workId
     ? new URL(`https://api.openalex.org/works/${workId}`)
     : doi
       ? new URL(`https://api.openalex.org/works/https://doi.org/${doi}`)
       : new URL("https://api.openalex.org/works");
   if (!workId && !doi) {
-    url.searchParams.set("search", value);
+    if (authorId) {
+      url.searchParams.set("filter", `authorships.author.id:${authorId}`);
+      url.searchParams.set("sort", "cited_by_count:desc");
+    } else {
+      url.searchParams.set("search", value);
+    }
     url.searchParams.set("per-page", "8");
     url.searchParams.set("select", "id,display_name,publication_year,cited_by_count,doi,authorships,primary_location,best_oa_location,primary_topic,ids");
   }

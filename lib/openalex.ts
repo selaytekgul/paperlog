@@ -20,6 +20,8 @@ type OpenAlexWork = {
   locations?: Array<{ landing_page_url?: string }>;
 };
 
+type OpenAlexAuthor = { id?: string; display_name?: string };
+
 function abstractFromIndex(index?: Record<string, number[]>): string {
   if (!index) return "";
   const words: Array<[number, string]> = [];
@@ -85,8 +87,14 @@ export async function searchOpenAlex(query: string): Promise<Paper[]> {
     const paper = await getOpenAlexPaperByOpenReview(direct.value);
     if (paper) return [paper];
   }
+  const authorId = direct.kind === "search" ? await findExactAuthor(query) : null;
   const url = new URL("https://api.openalex.org/works");
-  url.searchParams.set("search", direct.kind === "arxiv" || direct.kind === "openreview" ? direct.value : query);
+  if (authorId) {
+    url.searchParams.set("filter", `authorships.author.id:${authorId}`);
+    url.searchParams.set("sort", "cited_by_count:desc");
+  } else {
+    url.searchParams.set("search", direct.kind === "arxiv" || direct.kind === "openreview" ? direct.value : query);
+  }
   url.searchParams.set("per-page", "8");
   url.searchParams.set("select", "id,display_name,publication_year,cited_by_count,doi,authorships,primary_location,best_oa_location,primary_topic,ids");
   addOpenAlexCredentials(url);
@@ -94,6 +102,24 @@ export async function searchOpenAlex(query: string): Promise<Paper[]> {
   if (!response.ok) throw new Error("OpenAlex search is temporarily unavailable");
   const payload = (await response.json()) as { results?: OpenAlexWork[] };
   return (payload.results ?? []).map(normalizeOpenAlexWork).filter((paper) => paper.id);
+}
+
+function normalizedName(value: string) {
+  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+async function findExactAuthor(query: string): Promise<string | null> {
+  const url = new URL("https://api.openalex.org/authors");
+  url.searchParams.set("search", query);
+  url.searchParams.set("per-page", "3");
+  url.searchParams.set("select", "id,display_name");
+  addOpenAlexCredentials(url);
+  const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 3600 } });
+  if (!response.ok) return null;
+  const payload = (await response.json()) as { results?: OpenAlexAuthor[] };
+  const expected = normalizedName(query);
+  const author = payload.results?.find((candidate) => candidate.id && candidate.display_name && normalizedName(candidate.display_name) === expected);
+  return author?.id?.split("/").pop() ?? null;
 }
 
 export function parsePaperIdentifier(input: string): { kind: "openalex" | "doi" | "arxiv" | "openreview" | "search"; value: string } {
