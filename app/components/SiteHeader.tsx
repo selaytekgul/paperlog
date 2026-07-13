@@ -12,13 +12,12 @@ export function SiteHeader({ user }: { user: ChatGPTUser | null }) {
       </a>
       <SearchBox compact />
       <nav className="top-actions" aria-label="Primary navigation">
-        <a className="nav-link" href="/explore">Explore</a>
+        <a className="nav-link" href="/explore">Browse papers</a>
         {user ? (
           <><NotificationsMenu /><a className="pill-button secondary" href="/profile">{user.displayName.split(" ")[0]}</a></>
         ) : (
-          <a className="pill-button secondary" href={chatGPTSignInPath("/")}>Sign in</a>
+          <a className="pill-button" href={chatGPTSignInPath("/")}>Sign in</a>
         )}
-        <a className="pill-button" href="/explore">Explore papers</a>
       </nav>
     </header>
   );

@@ -17,36 +17,34 @@ export function HomeExperience({ user }: { user: ChatGPTUser | null }) {
     <div className="site-shell">
       <SiteHeader user={user} />
       <main>
-        <section className="hero">
-          <div>
-            <div className="eyebrow">A social reading diary for research</div>
-            <h1>Every paper leaves an <em>impression.</em></h1>
-            <p className="hero-copy">Find research papers, rate what you read, and leave the thought you wish someone had shared with you.</p>
-            <SearchBox />
-            <div className="hero-note">Searches scholarly works across disciplines through OpenAlex.</div>
-          </div>
-          <aside className="manifesto-card" aria-label="Paperlog philosophy">
-            <p>“I did not reproduce the result. I did finally understand why the result mattered.”</p>
-            <footer>That belongs in the literature, too.</footer>
-          </aside>
+        <section className="home-hero">
+          <div className="eyebrow">Your research reading log</div>
+          <h1>Find a paper. Share what stayed with you.</h1>
+          <p>Search published papers and preprints, rate what you read, and leave a short note. One honest sentence is enough.</p>
+          <SearchBox />
+          <div className="home-search-help"><span>Try a title, author, DOI, or arXiv ID.</span><span>Free to browse · Sign in only when you want to write.</span></div>
         </section>
 
-        <section className="content-wrap" id="discover">
-          <div className="section-head">
-            <div>
-              <p className="section-kicker">From the community</p>
-              <h2 className="section-title">Papers people keep returning to</h2>
-            </div>
-            <span className="section-kicker">Updated through reader activity</span>
+        <section className="content-wrap home-content" id="discover">
+          <div className="home-community-grid">
+            <section className="home-panel">
+              <div className="simple-section-head">
+                <div><p className="section-kicker">From the community</p><h2>Latest reader notes</h2></div>
+                <a href="/explore">Browse papers →</a>
+              </div>
+              <RecentActivity />
+            </section>
+            <aside className="home-panel starter-papers">
+              <div className="simple-section-head">
+                <div><p className="section-kicker">Not sure where to begin?</p><h2>Start with a familiar paper</h2></div>
+              </div>
+              <FeaturedPapers papers={featured} />
+            </aside>
           </div>
-          <div className="main-grid">
-            <FeaturedPapers papers={featured} />
-            <RecentActivity />
-          </div>
-          <div className="value-strip">
-            <div className="value-item"><strong>Log what you read</strong><p>A star rating and one honest sentence are enough. Your diary grows with your research life.</p></div>
-            <div className="value-item"><strong>Learn from perspectives</strong><p>See what students, researchers, engineers, and curious readers took away from the same work.</p></div>
-            <div className="value-item"><strong>Go deeper when ready</strong><p>Mark a first impression, a close read, or a code experience without pretending they are the same thing.</p></div>
+          <div className="how-it-works">
+            <div><span>1</span><strong>Find the paper</strong><p>Search by title, author, DOI, arXiv, or OpenReview.</p></div>
+            <div><span>2</span><strong>Choose your reading status</strong><p>First impression, skimmed, read, studied, or ran the code.</p></div>
+            <div><span>3</span><strong>Leave your take</strong><p>Add 1–5 stars and an optional note in your own words.</p></div>
           </div>
         </section>
       </main>

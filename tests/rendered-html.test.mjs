@@ -17,11 +17,13 @@ test("ships the Paperlog discovery experience", async () => {
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
-  assert.match(layout, /Paperlog — Papers and what people think about them/);
-  assert.match(home, /Every paper leaves an/);
-  assert.match(home, /Papers people keep returning to/);
+  assert.match(layout, /Paperlog — Your research reading log/);
+  assert.match(home, /Find a paper\. Share what stayed with you\./);
+  assert.match(home, /Latest reader notes/);
+  assert.match(home, /Start with a familiar paper/);
+  assert.match(home, /Free to browse/);
   assert.match(home, /<SearchBox \/>/);
-  assert.match(styles, /--green: #173f32/);
+  assert.match(styles, /--green: #164b3b/);
   assert.doesNotMatch(home + layout, /codex-preview|react-loading-skeleton/);
 });
 

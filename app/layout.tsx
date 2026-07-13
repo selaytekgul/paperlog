@@ -5,11 +5,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://paperlog.net"),
   applicationName: "Paperlog",
   title: {
-    default: "Paperlog — Papers and what people think about them",
+    default: "Paperlog — Your research reading log",
     template: "%s · Paperlog",
   },
   description:
-    "A social reading diary for research papers. Rate papers, leave reader notes, and discover what others are reading.",
+    "Find research papers, rate what you read, and keep a simple public reading log.",
   manifest: "/site.webmanifest",
   icons: {
     icon: [
@@ -31,15 +31,15 @@ export const metadata: Metadata = {
     url: "https://paperlog.net/",
     locale: "en_US",
     siteName: "Paperlog",
-    title: "Paperlog — Papers and what people think about them",
-    description: "A social reading diary for research papers.",
-    images: [{ url: "/og.png", width: 1731, height: 908, alt: "Paperlog — Papers and what people think about them" }],
+    title: "Paperlog — Your research reading log",
+    description: "Find a paper, see what readers thought, and share your own take.",
+    images: [{ url: "/og-simple.png", width: 1734, height: 907, alt: "Paperlog — Find a paper. Share what stayed with you." }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Paperlog — Papers and what people think about them",
-    description: "A social reading diary for research papers.",
-    images: ["/og.png"],
+    title: "Paperlog — Your research reading log",
+    description: "Find a paper, see what readers thought, and share your own take.",
+    images: ["/og-simple.png"],
   },
   robots: {
     index: true,

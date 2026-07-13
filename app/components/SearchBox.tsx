@@ -85,19 +85,19 @@ export function SearchBox({ compact = false }: { compact?: boolean }) {
         value={query}
         onChange={(event) => search(event.target.value)}
         onFocus={() => query && setOpen(true)}
-        placeholder={compact ? "Title, DOI, arXiv or OpenReview" : "Search a title, author, topic, DOI, arXiv ID, or OpenReview URL"}
+        placeholder={compact ? "Search papers" : "Search papers by title, author, DOI, or arXiv"}
         autoComplete="off"
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={open}
         aria-controls={panelId}
       />
-      {compact ? <span className="search-glyph" aria-hidden="true">⌕</span> : <button className="pill-button" type="submit">Find paper</button>}
+      {compact ? <span className="search-glyph" aria-hidden="true">⌕</span> : <button className="pill-button" type="submit">Search</button>}
       {open && (
         <div className="search-panel" id={panelId} role="listbox" aria-label="Paper search results">
           {loading && <div className="search-state">Searching the literature…</div>}
           {!loading && notice && <div className="search-notice" role="status">{notice}</div>}
-          {!loading && results.length === 0 && <div className="search-state">Search OpenAlex by title, author, DOI, arXiv ID, or OpenReview URL.</div>}
+          {!loading && results.length === 0 && <div className="search-state">Keep typing to search the research literature.</div>}
           {!loading && results.map((paper) => (
             <button className="search-result" type="button" role="option" aria-selected="false" key={paper.id} onClick={() => { void openPaper(paper); }}>
               <strong>{paper.title}</strong>
