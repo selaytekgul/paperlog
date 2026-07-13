@@ -179,3 +179,52 @@ export const authorClaims = sqliteTable("author_claims", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   reviewedAt: text("reviewed_at"),
 }, (table) => [uniqueIndex("author_claim_user_paper_unique").on(table.userEmail, table.paperId)]);
+
+export const authUsers = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: integer("emailVerified", { mode: "boolean" }).notNull().default(false),
+  image: text("image"),
+  createdAt: text("createdAt").notNull(),
+  updatedAt: text("updatedAt").notNull(),
+});
+
+export const authSessions = sqliteTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: text("expiresAt").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: text("createdAt").notNull(),
+  updatedAt: text("updatedAt").notNull(),
+  ipAddress: text("ipAddress"),
+  userAgent: text("userAgent"),
+  userId: text("userId").notNull().references(() => authUsers.id, { onDelete: "cascade" }),
+}, (table) => [index("auth_session_user_idx").on(table.userId)]);
+
+export const authAccounts = sqliteTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("accountId").notNull(),
+  providerId: text("providerId").notNull(),
+  userId: text("userId").notNull().references(() => authUsers.id, { onDelete: "cascade" }),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  idToken: text("idToken"),
+  accessTokenExpiresAt: text("accessTokenExpiresAt"),
+  refreshTokenExpiresAt: text("refreshTokenExpiresAt"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: text("createdAt").notNull(),
+  updatedAt: text("updatedAt").notNull(),
+}, (table) => [
+  index("auth_account_user_idx").on(table.userId),
+  uniqueIndex("auth_account_provider_unique").on(table.providerId, table.accountId),
+]);
+
+export const authVerifications = sqliteTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: text("expiresAt").notNull(),
+  createdAt: text("createdAt").notNull(),
+  updatedAt: text("updatedAt").notNull(),
+}, (table) => [index("auth_verification_identifier_idx").on(table.identifier)]);

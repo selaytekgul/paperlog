@@ -1,10 +1,13 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { ensureDbSchema } from "../db";
+import { getBetterAuth, getBetterAuthSession } from "../lib/auth";
 
 export type ChatGPTUser = {
   displayName: string;
   email: string;
   fullName: string | null;
+  authProvider: "external" | "chatgpt";
 };
 
 const USER_EMAIL_HEADER = "oai-authenticated-user-email";
@@ -12,12 +15,30 @@ const USER_FULL_NAME_HEADER = "oai-authenticated-user-full-name";
 const USER_FULL_NAME_ENCODING_HEADER =
   "oai-authenticated-user-full-name-encoding";
 const PERCENT_ENCODED_UTF8 = "percent-encoded-utf-8";
-const SIGN_IN_PATH = "/signin-with-chatgpt";
-const SIGN_OUT_PATH = "/signout-with-chatgpt";
+const SIGN_IN_PATH = "/signin";
+const SIGN_OUT_PATH = "/signout";
+const CHATGPT_SIGN_IN_PATH = "/signin-with-chatgpt";
+const CHATGPT_SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
+
+  if (getBetterAuth()) {
+    await ensureDbSchema();
+    const session = await getBetterAuthSession(requestHeaders);
+    if (session?.user.email) {
+      const email = session.user.email.trim().toLowerCase();
+      const fullName = session.user.name?.trim() || null;
+      return {
+        displayName: fullName ?? email,
+        email,
+        fullName,
+        authProvider: "external",
+      };
+    }
+  }
+
   const email = requestHeaders.get(USER_EMAIL_HEADER);
   if (!email) return null;
 
@@ -32,6 +53,7 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
     displayName: fullName ?? email,
     email,
     fullName,
+    authProvider: "chatgpt",
   };
 }
 
@@ -54,7 +76,17 @@ export function chatGPTSignOutPath(returnTo = "/"): string {
   return `${SIGN_OUT_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
 }
 
-function safeRelativeReturnPath(value: string): string {
+export function directChatGPTSignInPath(returnTo: string): string {
+  const safeReturnTo = safeRelativeReturnPath(returnTo);
+  return `${CHATGPT_SIGN_IN_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+}
+
+export function directChatGPTSignOutPath(returnTo = "/"): string {
+  const safeReturnTo = safeRelativeReturnPath(returnTo);
+  return `${CHATGPT_SIGN_OUT_PATH}?return_to=${encodeURIComponent(safeReturnTo)}`;
+}
+
+export function safeRelativeReturnPath(value: string): string {
   if (!value.startsWith("/") || value.startsWith("//")) return "/";
 
   let url: URL;
@@ -73,6 +105,8 @@ function isReservedAuthPath(pathname: string): boolean {
   return (
     pathname === SIGN_IN_PATH ||
     pathname === SIGN_OUT_PATH ||
+    pathname === CHATGPT_SIGN_IN_PATH ||
+    pathname === CHATGPT_SIGN_OUT_PATH ||
     pathname === CALLBACK_PATH
   );
 }

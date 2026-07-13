@@ -3,6 +3,8 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 Disallow: /profile
+Disallow: /signin
+Disallow: /signout
 Disallow: /signin-with-chatgpt
 Disallow: /signout-with-chatgpt
 Disallow: /callback

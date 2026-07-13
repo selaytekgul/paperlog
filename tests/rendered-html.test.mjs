@@ -22,12 +22,26 @@ test("covers account export and deletion across Paperlog data stores", async () 
     readFile(new URL("../db/index.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/privacy/page.tsx", import.meta.url), "utf8"),
   ]);
-  for (const table of ["profiles", "logs", "reading_entries", "reports", "contact_requests", "activity_events", "follows", "helpful_votes", "replies", "notifications", "paper_lists", "paper_list_items", "code_experiences", "metadata_corrections", "author_claims"]) {
+  for (const table of ["profiles", "logs", "reading_entries", "reports", "contact_requests", "activity_events", "follows", "helpful_votes", "replies", "notifications", "paper_lists", "paper_list_items", "code_experiences", "metadata_corrections", "author_claims", "session", "account", "verification", "user"]) {
     assert.match(accountRoute, new RegExp(table));
   }
   assert.match(accountRoute, /Cache-Control.*no-store/);
   assert.match(accountRoute, /identityProviderAccountDeleted: false/);
   assert.match(database, /30 \* 24 \* 60 \* 60_000/);
   assert.match(privacy, /immediately removes account-linked records/);
-  assert.match(privacy, /does not delete your ChatGPT/);
+  assert.match(privacy, /does not delete your Google, GitHub, ChatGPT/);
+});
+
+test("offers unified sign-in without replacing managed ChatGPT auth", async () => {
+  const [signIn, authBridge, authConfig] = await Promise.all([
+    readFile(new URL("../app/signin/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/chatgpt-auth.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/auth.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(signIn, /Continue with ChatGPT/);
+  assert.match(signIn, /SocialSignInButtons/);
+  assert.match(authBridge, /signin-with-chatgpt/);
+  assert.match(authConfig, /google/);
+  assert.match(authConfig, /github/);
+  assert.match(authConfig, /encryptOAuthTokens: true/);
 });

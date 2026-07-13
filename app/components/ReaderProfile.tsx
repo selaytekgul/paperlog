@@ -13,7 +13,7 @@ export function ReaderProfile({ reader }: { reader: Reader }) {
   const initials = reader.displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   return (
     <div className="paper-page">
-      <header className="topbar"><a className="brand" href="/"><span className="brand-mark" /><span className="brand-name">Paperlog</span></a><div /><div className="top-actions"><a className="nav-link" href="/">Discover</a>{reader.isOwner && <a className="pill-button secondary" href="/signout-with-chatgpt?return_to=/">Sign out</a>}</div></header>
+      <header className="topbar"><a className="brand" href="/"><span className="brand-mark" /><span className="brand-name">Paperlog</span></a><div /><div className="top-actions"><a className="nav-link" href="/">Discover</a>{reader.isOwner && <a className="pill-button secondary" href="/signout?return_to=/">Sign out</a>}</div></header>
       <main className="content-wrap profile-wrap">
         <a href="/" className="back-link">← Back to discovery</a>
         <section className="profile-hero"><span className="avatar profile-avatar">{initials}</span><div><p className="section-kicker">Reader profile</p><h1 className="section-title">{reader.displayName}</h1>{reader.affiliation && <p className="profile-affiliation">{reader.affiliation}</p>}{reader.bio && <p className="profile-bio">{reader.bio}</p>}<p className="profile-summary">{reader.logs.length} paper{reader.logs.length === 1 ? "" : "s"} logged · {reader.saved.length} saved · {reader.followingCount} following</p>{reader.interests.length > 0 && <div className="interest-row">{reader.interests.map((interest) => <span className="topic-chip" key={interest}>{interest}</span>)}</div>}<ProfileActions reader={reader} /></div></section>

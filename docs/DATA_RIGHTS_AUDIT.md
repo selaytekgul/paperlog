@@ -7,16 +7,18 @@ This record describes what the application actually does. It is an engineering c
 ## Self-service controls
 
 - A signed-in reader can download a JSON export from the profile page.
-- The export covers the profile, logs, saved papers, replies, helpful votes, follows, notifications, lists and list items, reproducibility reports, metadata corrections, author claims, submitted moderation reports, contact requests matching the account email, and hashed security-event history.
+- The export covers the profile, logs, saved papers, replies, helpful votes, follows, notifications, lists and list items, reproducibility reports, metadata corrections, author claims, submitted moderation reports, contact requests matching the account email, hashed security-event history, external-authentication identity, linked-provider metadata, and session metadata.
+- OAuth access, refresh, and ID tokens, session tokens, and passwords are deliberately excluded from reader exports. Stored OAuth tokens are encrypted at rest by the application authentication layer.
 - Other readers’ private email addresses are excluded from the export. Social connections and notification actors are represented by public profile identity when available.
 - A signed-in reader can permanently delete the Paperlog account after typing `DELETE`.
-- Deletion removes account-linked rows from the live D1 application database, including records authored by the reader and dependent engagement on logs being removed.
+- Deletion removes account-linked rows from the live D1 application database, including records authored by the reader, dependent engagement on logs being removed, app-owned sign-in sessions, and Google/GitHub account-linking records.
 - Deletion also removes contact requests matching the account email and the one-way-hashed application rate-limit records.
-- The deletion control does not delete the user’s ChatGPT or other identity-provider account.
+- The deletion control does not delete the user’s Google, GitHub, ChatGPT, or other identity-provider account.
 
 ## Retention boundary
 
 - Profile and community records remain until the reader deletes individual material or the account.
+- App-owned Google and GitHub sessions expire after seven days unless refreshed through use.
 - Application rate-limit events are automatically purged after 30 days and are also removed during account deletion.
 - Public paper and author metadata remains because it is imported from scholarly sources rather than created as reader-account data.
 - Provider-side request logs and protected backups are outside the application database. The operator must obtain and record the provider’s retention/backup terms and ensure that a restore does not reactivate an account that was deleted after the backup was created.

@@ -1,4 +1,4 @@
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { chatGPTSignInPath, getChatGPTUser } from "../../chatgpt-auth";
 import { ensureDbSchema, getDb, rateLimit } from "../../../db";
 import { reports } from "../../../db/schema";
 
@@ -6,7 +6,7 @@ const reasons = new Set(["harassment", "unsupported-allegation", "copyright", "p
 
 export async function POST(request: Request) {
   const user = await getChatGPTUser();
-  if (!user) return Response.json({ error: "Sign in to report a reader log", signIn: "/signin-with-chatgpt?return_to=/" }, { status: 401 });
+  if (!user) return Response.json({ error: "Sign in to report a reader log", signIn: chatGPTSignInPath("/") }, { status: 401 });
   const payload = (await request.json()) as { logId?: number; reason?: string; details?: string };
   const logId = Number(payload.logId);
   const reason = payload.reason ?? "other";

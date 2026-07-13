@@ -10,10 +10,24 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+const localEnvironmentKeys = [
+  "OPENALEX_API_KEY",
+  "PAPERLOG_ADMIN_EMAIL",
+  "BETTER_AUTH_SECRET",
+  "BETTER_AUTH_URL",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "GITHUB_CLIENT_ID",
+  "GITHUB_CLIENT_SECRET",
+] as const;
+const localVars = Object.fromEntries(
+  localEnvironmentKeys.flatMap((key) => process.env[key] ? [[key, process.env[key]!]] : []),
+);
 
 const localBindingConfig = {
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
+  vars: localVars,
   d1_databases: d1
     ? [
         {

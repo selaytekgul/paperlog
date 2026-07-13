@@ -23,6 +23,7 @@ Live MVP: [paperlog.net](https://paperlog.net)
 - metadata/version correction workflow
 - private moderation console, audit trail, rate limits, health endpoint, and JSON backup export
 - account export/deletion, alpha onboarding, legal pages, and responsive/accessibility treatment
+- unified Google, GitHub, and managed ChatGPT sign-in with verified-email account linking
 
 ## Prerequisites
 
@@ -79,25 +80,38 @@ export default async function Home() {
 }
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+## Authentication on Sites
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+Paperlog keeps the Sites-managed ChatGPT sign-in and adds app-owned Google and
+GitHub OAuth through the unified `/signin` page. Import the compatibility
+helpers from `app/chatgpt-auth.ts` when a page needs optional or required
+identity:
 
 - Use `getChatGPTUser()` for optional signed-in UI.
 - Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
   anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
+- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for the
+  unified provider chooser and provider-aware sign-out.
 - Pass a same-origin relative `returnTo` path for the destination after sign-in
   or sign-out. The helper validates and safely encodes it.
 - Mark protected pages with `export const dynamic = "force-dynamic"` because
   they depend on per-request identity headers.
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+Sites owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, its
+cookies, and ChatGPT identity header injection. Do not implement app routes for
+those reserved paths. Paperlog owns `/api/auth/*` and stores Google/GitHub users,
+linked accounts, and sessions in the existing D1 database. Provider tokens are
+encrypted, and accounts are linked only through provider-verified matching
+email addresses.
+
+Configure `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and the Google/GitHub client
+credentials documented in `.env.example`. Register these production callbacks:
+
+- `https://paperlog.net/api/auth/callback/google`
+- `https://paperlog.net/api/auth/callback/github`
+
+If a provider credential pair is absent, its button is hidden and ChatGPT
+sign-in continues to work.
 
 SIWC establishes identity only; it does not prove workspace membership. Use the
 Sites hosting platform's access policy controls for workspace-wide restrictions,

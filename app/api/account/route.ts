@@ -14,7 +14,7 @@ export async function GET() {
   if (!user) return Response.json({ error: "Sign in to export your data" }, { status: 401 });
   await ensureDbSchema();
   const actorHash = await hashActor(user.email);
-  const [profile, logs, savedPapers, replies, helpfulVotes, follows, notifications, lists, listItems, codeExperiences, metadataCorrections, authorClaims, reportsSubmitted, contactRequests, securityEvents] = await Promise.all([
+  const [profile, logs, savedPapers, replies, helpfulVotes, follows, notifications, lists, listItems, codeExperiences, metadataCorrections, authorClaims, reportsSubmitted, contactRequests, securityEvents, authUser, authAccounts, authSessions] = await Promise.all([
     rows("SELECT user_email AS userEmail, slug, display_name AS displayName, bio, affiliation, interests_json AS interests, created_at AS createdAt, updated_at AS updatedAt FROM profiles WHERE user_email = ?", user.email),
     rows("SELECT id, paper_id AS paperId, rating, status, comment, display_name AS displayName, created_at AS createdAt, updated_at AS updatedAt FROM logs WHERE user_email = ? ORDER BY updated_at DESC", user.email),
     rows("SELECT id, paper_id AS paperId, created_at AS createdAt FROM reading_entries WHERE user_email = ? ORDER BY created_at DESC", user.email),
@@ -38,9 +38,18 @@ export async function GET() {
     rows("SELECT id, log_id AS logId, reason, details, status, created_at AS createdAt FROM reports WHERE reporter_email = ? ORDER BY created_at DESC", user.email),
     rows("SELECT id, email, category, message, status, created_at AS createdAt FROM contact_requests WHERE lower(email) = lower(?) ORDER BY created_at DESC", user.email),
     rows("SELECT action, created_at AS createdAt FROM activity_events WHERE actor_hash = ? ORDER BY created_at DESC", actorHash),
+    rows('SELECT id, name, email, emailVerified, image, createdAt, updatedAt FROM "user" WHERE lower(email) = lower(?)', user.email),
+    rows('SELECT providerId, accountId, scope, createdAt, updatedAt FROM "account" WHERE userId IN (SELECT id FROM "user" WHERE lower(email) = lower(?)) ORDER BY createdAt DESC', user.email),
+    rows('SELECT id, expiresAt, ipAddress, userAgent, createdAt, updatedAt FROM "session" WHERE userId IN (SELECT id FROM "user" WHERE lower(email) = lower(?)) ORDER BY createdAt DESC', user.email),
   ]);
   const data = {
-    account: { email: user.email, managedDisplayName: user.displayName },
+    account: { email: user.email, managedDisplayName: user.displayName, authenticationPath: user.authProvider },
+    externalAuthentication: {
+      user: authUser[0] ?? null,
+      linkedProviders: authAccounts,
+      sessions: authSessions,
+      note: "OAuth access tokens, refresh tokens, ID tokens, passwords, and session tokens are intentionally excluded.",
+    },
     profile: profile[0] ?? null,
     logs,
     savedPapers,
@@ -57,7 +66,7 @@ export async function GET() {
     contactRequests,
     securityEvents,
   };
-  return new Response(JSON.stringify({ exportedAt: new Date().toISOString(), schemaVersion: 3, data }, null, 2), {
+  return new Response(JSON.stringify({ exportedAt: new Date().toISOString(), schemaVersion: 4, data }, null, 2), {
     headers: { "Content-Type": "application/json", "Content-Disposition": "attachment; filename=paperlog-data.json", "Cache-Control": "no-store" },
   });
 }
@@ -88,6 +97,10 @@ export async function DELETE(request: Request) {
     db.prepare("DELETE FROM profiles WHERE user_email = ?").bind(user.email),
     db.prepare("DELETE FROM contact_requests WHERE lower(email) = lower(?)").bind(user.email),
     db.prepare("DELETE FROM activity_events WHERE actor_hash = ?").bind(actorHash),
+    db.prepare('DELETE FROM "session" WHERE userId IN (SELECT id FROM "user" WHERE lower(email) = lower(?))').bind(user.email),
+    db.prepare('DELETE FROM "account" WHERE userId IN (SELECT id FROM "user" WHERE lower(email) = lower(?))').bind(user.email),
+    db.prepare('DELETE FROM "verification" WHERE lower(identifier) = lower(?)').bind(user.email),
+    db.prepare('DELETE FROM "user" WHERE lower(email) = lower(?)').bind(user.email),
   ]);
   const deletedRecords = results.reduce((total, result) => total + Number(result.meta?.changes ?? 0), 0);
   return Response.json({ deleted: true, deletedRecords, scope: "Paperlog live application database", identityProviderAccountDeleted: false }, { headers: { "Cache-Control": "no-store" } });

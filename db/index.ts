@@ -90,6 +90,54 @@ export async function ensureDbSchema() {
     runtimeEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS moderation_actions (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, admin_email TEXT NOT NULL, action TEXT NOT NULL, target_type TEXT NOT NULL, target_id TEXT NOT NULL, details TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`),
     runtimeEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS author_claims (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, paper_id TEXT NOT NULL, user_email TEXT NOT NULL, evidence_url TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, reviewed_at TEXT)`),
     runtimeEnv.DB.prepare("CREATE UNIQUE INDEX IF NOT EXISTS author_claim_user_paper_unique ON author_claims(user_email, paper_id)"),
+    runtimeEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS "user" (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      emailVerified INTEGER NOT NULL DEFAULT 0,
+      image TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    )`),
+    runtimeEnv.DB.prepare("CREATE UNIQUE INDEX IF NOT EXISTS auth_user_email_unique ON \"user\"(email)"),
+    runtimeEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS "session" (
+      id TEXT PRIMARY KEY NOT NULL,
+      expiresAt TEXT NOT NULL,
+      token TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL,
+      ipAddress TEXT,
+      userAgent TEXT,
+      userId TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE
+    )`),
+    runtimeEnv.DB.prepare("CREATE UNIQUE INDEX IF NOT EXISTS auth_session_token_unique ON \"session\"(token)"),
+    runtimeEnv.DB.prepare("CREATE INDEX IF NOT EXISTS auth_session_user_idx ON \"session\"(userId)"),
+    runtimeEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS "account" (
+      id TEXT PRIMARY KEY NOT NULL,
+      accountId TEXT NOT NULL,
+      providerId TEXT NOT NULL,
+      userId TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+      accessToken TEXT,
+      refreshToken TEXT,
+      idToken TEXT,
+      accessTokenExpiresAt TEXT,
+      refreshTokenExpiresAt TEXT,
+      scope TEXT,
+      password TEXT,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    )`),
+    runtimeEnv.DB.prepare("CREATE INDEX IF NOT EXISTS auth_account_user_idx ON \"account\"(userId)"),
+    runtimeEnv.DB.prepare("CREATE UNIQUE INDEX IF NOT EXISTS auth_account_provider_unique ON \"account\"(providerId, accountId)"),
+    runtimeEnv.DB.prepare(`CREATE TABLE IF NOT EXISTS "verification" (
+      id TEXT PRIMARY KEY NOT NULL,
+      identifier TEXT NOT NULL,
+      value TEXT NOT NULL,
+      expiresAt TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    )`),
+    runtimeEnv.DB.prepare("CREATE INDEX IF NOT EXISTS auth_verification_identifier_idx ON \"verification\"(identifier)"),
   ]);
   await ensureColumn("profiles", "bio", "TEXT NOT NULL DEFAULT ''");
   await ensureColumn("profiles", "affiliation", "TEXT NOT NULL DEFAULT ''");
