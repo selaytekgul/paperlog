@@ -11,6 +11,7 @@ Live MVP: [paperlog.net](https://paperlog.net)
 - [Friend testing guide](docs/FRIEND_TEST_GUIDE.md)
 - [2026-07-12 build and operations handoff](docs/HANDOFF_2026-07-12.md)
 - [2026-07-13 Google, GitHub, and ChatGPT authentication handoff](docs/AUTH_HANDOFF_2026-07-13.md)
+- [2026-07-13 verified production status](docs/STATUS_2026-07-13.md)
 - [Data-rights implementation audit](docs/DATA_RIGHTS_AUDIT.md)
 
 ## Alpha capabilities
