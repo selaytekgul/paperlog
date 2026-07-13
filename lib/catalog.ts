@@ -1,7 +1,8 @@
-import { getStoredPaper } from "../db/papers";
+import { getStoredPaper, getStoredPaperByDoi } from "../db/papers";
 import { upsertPaper } from "../db/helpers";
 import { ensureDbSchema } from "../db";
-import { getOpenAlexPaper } from "./openalex";
+import { getOpenAlexPaper, getOpenAlexPaperByDoi } from "./openalex";
+import { resolveDoiWithFallback } from "./doi";
 
 export async function getCatalogPaper(id: string) {
   try {
@@ -15,4 +16,15 @@ export async function getCatalogPaper(id: string) {
     // The local catalog keeps previously opened papers available during metadata-provider outages.
   }
   return getStoredPaper(id);
+}
+
+export async function getCatalogPaperByDoi(input: string) {
+  return resolveDoiWithFallback(input, {
+    lookupRemote: getOpenAlexPaperByDoi,
+    lookupStored: getStoredPaperByDoi,
+    cacheRemote: async (paper) => {
+      await ensureDbSchema();
+      await upsertPaper(paper);
+    },
+  });
 }

@@ -16,6 +16,7 @@ Live MVP: [paperlog.net](https://paperlog.net)
 ## Alpha capabilities
 
 - OpenAlex paper search plus direct DOI, arXiv, OpenReview, and OpenAlex ID resolution
+- public DOI redirects at `/paper/doi?doi=…` for durable links from related applications
 - live rating and log aggregates from the first real rating
 - profiles with bios, affiliations, interests, follows, saved papers, and public lists
 - reader logs with engagement status, helpful votes, replies, reports, and notifications

@@ -21,6 +21,23 @@ export async function getStoredPaper(id: string): Promise<Paper | null> {
   return row ? fromRow(row) : null;
 }
 
+export async function getStoredPaperByDoi(doi: string): Promise<Paper | null> {
+  await ensureDbSchema();
+  const normalized = doi.toLowerCase();
+  const candidates = [
+    normalized,
+    `https://doi.org/${normalized}`,
+    `http://doi.org/${normalized}`,
+    `https://dx.doi.org/${normalized}`,
+    `http://dx.doi.org/${normalized}`,
+  ];
+  const row = await getD1().prepare(`SELECT id, title, authors_json AS authorsJson, publication_year AS publicationYear, venue, doi,
+    landing_page_url AS landingPageUrl, pdf_url AS pdfUrl, topic, abstract, cited_by_count AS citedByCount,
+    arxiv_id AS arxivId, openreview_id AS openReviewId FROM papers
+    WHERE LOWER(TRIM(COALESCE(doi, ''))) IN (?, ?, ?, ?, ?) LIMIT 1`).bind(...candidates).first<StoredPaperRow>();
+  return row ? fromRow(row) : null;
+}
+
 export async function searchStoredPapers(query: string): Promise<Paper[]> {
   await ensureDbSchema();
   const normalized = query.toLowerCase().replace(/^https?:\/\/(?:dx\.)?doi\.org\//, "").replace(/^doi:\s*/, "").trim();
