@@ -25,6 +25,16 @@ test("ships the Paperlog discovery experience", async () => {
   assert.doesNotMatch(home + layout, /codex-preview|react-loading-skeleton/);
 });
 
+test("keeps the activity prefix separate from the bold paper link", async () => {
+  const [activity, styles] = await Promise.all([
+    readFile(new URL("../app/components/RecentActivity.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(activity, /className="note-paper-line"><span>on<\/span> <a className="note-paper"/);
+  assert.doesNotMatch(activity, /className="note-paper"[^>]*>on /);
+  assert.match(styles, /\.note-paper-line \{[^}]*font-weight: 400/);
+});
+
 test("covers account export and deletion across Paperlog data stores", async () => {
   const [accountRoute, database, privacy] = await Promise.all([
     readFile(new URL("../app/api/account/route.ts", import.meta.url), "utf8"),
