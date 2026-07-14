@@ -36,7 +36,7 @@ async function waitForServer(url, child, logs) {
 async function main() {
   const port = await availablePort();
   assert.ok(port, "Could not reserve a local test port");
-  const origin = `http://127.0.0.1:${port}`;
+  const origin = `http://localhost:${port}`;
   const executable = resolve("node_modules/.bin/vinext");
   const logs = [];
   const child = spawn(executable, ["dev", "--host", "127.0.0.1", "--port", String(port)], {
