@@ -50,8 +50,9 @@ test("protects every app-owned mutating API route with the global API proxy", as
     readFile(new URL("../app/api/auth/[...all]/route.ts", import.meta.url), "utf8"),
     findRouteFiles(new URL("../app/api/", import.meta.url)),
   ]);
-  assert.match(proxySource, /matcher:\s*"\/api\/:path\*"/);
+  assert.match(proxySource, /matcher:\s*\["\/", "\/:path\*"\]/);
   assert.match(proxySource, /isTrustedMutationRequest/);
+  assert.match(proxySource, /applySecurityHeaders/);
   assert.match(authRoute, /export const POST = handle/);
 
   const mutatingRoutes = [];
@@ -64,7 +65,10 @@ test("protects every app-owned mutating API route with the global API proxy", as
 });
 
 test("defines the required browser security headers", async () => {
-  const config = await readFile(new URL("../next.config.ts", import.meta.url), "utf8");
+  const [config, headerSource] = await Promise.all([
+    readFile(new URL("../next.config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/security-headers.ts", import.meta.url), "utf8"),
+  ]);
   for (const header of [
     "Content-Security-Policy",
     "Strict-Transport-Security",
@@ -72,9 +76,10 @@ test("defines the required browser security headers", async () => {
     "X-Frame-Options",
     "Referrer-Policy",
     "Permissions-Policy",
-  ]) assert.match(config, new RegExp(header));
-  assert.match(config, /frame-ancestors 'none'/);
-  assert.match(config, /connect-src 'self' https:\/\/api\.openalex\.org/);
+  ]) assert.match(headerSource, new RegExp(header));
+  assert.match(headerSource, /frame-ancestors 'none'/);
+  assert.match(headerSource, /connect-src 'self' https:\/\/api\.openalex\.org/);
+  assert.match(config, /securityHeaders/);
 });
 
 test("keeps health, search, administrator backup, and data-rights contracts observable", async () => {

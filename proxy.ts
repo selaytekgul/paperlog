@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { crossSiteRequestResponse, isTrustedMutationRequest } from "./lib/request-security";
+import { applySecurityHeaders } from "./lib/security-headers";
 
 export function proxy(request: NextRequest) {
-  if (!isTrustedMutationRequest(request)) return crossSiteRequestResponse();
-  return NextResponse.next();
+  const response = isTrustedMutationRequest(request) ? NextResponse.next() : crossSiteRequestResponse();
+  return applySecurityHeaders(response);
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/", "/:path*"],
 };
