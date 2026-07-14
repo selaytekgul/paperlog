@@ -12,9 +12,10 @@ async function importTypeScriptModule(relativePath) {
 }
 
 test("ships the Paperlog discovery experience", async () => {
-  const [home, layout, styles] = await Promise.all([
+  const [home, layout, footer, styles] = await Promise.all([
     readFile(new URL("../app/components/HomeExperience.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/SiteFooter.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
   assert.match(layout, /Paperlog — Your research reading log/);
@@ -23,6 +24,8 @@ test("ships the Paperlog discovery experience", async () => {
   assert.match(home, /Start with a familiar paper/);
   assert.match(home, /Free to browse/);
   assert.match(home, /<SearchBox \/>/);
+  assert.match(footer, /https:\/\/paperpicture\.net/);
+  assert.match(footer, />Paper Picture<\/a>/);
   assert.match(styles, /--green: #164b3b/);
   assert.doesNotMatch(home + layout, /codex-preview|react-loading-skeleton/);
 });
