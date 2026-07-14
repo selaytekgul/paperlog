@@ -1,0 +1,25 @@
+name: Paperlog uptime
+
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check homepage
+        run: curl --fail --silent --show-error --location --retry 2 --max-time 20 https://paperlog.net/ > /dev/null
+      - name: Check database health
+        run: |
+          response="$(curl --fail --silent --show-error --retry 2 --max-time 20 https://paperlog.net/api/health)"
+          node -e 'const value=JSON.parse(process.argv[1]); if(value.status!=="ok"||value.database!=="connected") process.exit(1)' "$response"
+      - name: Check OpenAlex-backed search
+        run: |
+          response="$(curl --fail --silent --show-error --get --retry 2 --max-time 30 --data-urlencode 'q=GravoTet: A fast multigrid hierarchy construction for tetrahedral meshes' https://paperlog.net/api/search)"
+          node -e 'const value=JSON.parse(process.argv[1]); if(!Array.isArray(value.papers)||!value.papers.some((paper)=>paper.title?.startsWith("GravoTet:"))) process.exit(1)' "$response"

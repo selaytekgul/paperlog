@@ -13,6 +13,7 @@ Live MVP: [paperlog.net](https://paperlog.net)
 - [2026-07-13 Google, GitHub, and ChatGPT authentication handoff](docs/AUTH_HANDOFF_2026-07-13.md)
 - [2026-07-13 verified production status](docs/STATUS_2026-07-13.md)
 - [Data-rights implementation audit](docs/DATA_RIGHTS_AUDIT.md)
+- [Private backup and isolated restore procedure](docs/BACKUP_AND_RESTORE.md)
 
 ## Alpha capabilities
 
@@ -26,6 +27,7 @@ Live MVP: [paperlog.net](https://paperlog.net)
 - manually verified paper-author responses
 - metadata/version correction workflow
 - private moderation console, audit trail, rate limits, health endpoint, and JSON backup export
+- browser security headers, same-origin protection for state-changing APIs, scheduled uptime checks, and dependency monitoring
 - account export/deletion, alpha onboarding, legal pages, and responsive/accessibility treatment
 - unified Google, GitHub, and managed ChatGPT sign-in with verified-email account linking
 
@@ -128,7 +130,11 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 - `npm run dev`: start local development
 - `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
+- `npm test`: build Paperlog and run the complete automated test suite
+- `npm run test:unit`: run API/security, restore, and rendered-experience tests without rebuilding
+- `npm run test:api`: start an isolated local app and smoke-test live API routes
+- `npm run audit`: fail on high- or critical-severity dependency findings
+- `npm run backup:restore -- --input … --output …`: verify an administrator export in an isolated local SQLite database
 - `npm run db:generate`: generate Drizzle migrations after schema changes
 
 ## Learn More
@@ -138,4 +144,4 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 ## External launch handoffs
 
-The custom domain is connected and the MVP is publicly reachable. The application code cannot obtain the operator's private OpenAlex API key or replace formal legal review. Set `OPENALEX_API_KEY` in hosting for normal API capacity, keep exports of the production database, and have the policies reviewed before a broad public launch.
+The custom domain is connected, the MVP is publicly reachable, and `OPENALEX_API_KEY` is configured as a protected hosting secret. Keep private production exports on a regular schedule, run restore drills, review automated dependency updates before merging, and have the policies reviewed before a broad public launch.

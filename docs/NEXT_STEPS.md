@@ -8,8 +8,8 @@ This roadmap is ordered by risk and learning value. Do not add large speculative
 - [ ] Confirm sign-in, profile creation, rating, comment, edit, delete, and sign-out with a non-admin test account.
 - [x] Confirm the uncommon-paper path by searching for “GravoTet: A fast multigrid hierarchy construction for tetrahedral meshes”. The browser fallback returned the exact paper on 2026-07-12.
 - [x] Confirm `/api/health` succeeds.
-- [ ] Produce a private `/api/admin/export` backup and store it outside the repository.
-- [ ] Add `OPENALEX_API_KEY` to the protected hosting environment if it is not already present.
+- [x] Produce a private `/api/admin/export` backup and store it outside the repository. First verified export: 2026-07-14.
+- [x] Add `OPENALEX_API_KEY` to the protected hosting environment. Verified with the live GravoTet search on 2026-07-14.
 - [ ] Invite one adult friend first, using `docs/FRIEND_TEST_GUIDE.md`.
 - [ ] Resolve any blocking error before inviting the remaining four testers.
 - [ ] Record feedback as reproducible observations: page, action, expected result, actual result, device/browser, and screenshot when useful.
@@ -19,13 +19,13 @@ Exit criterion: one friend can find a paper and publish or edit a reader note wi
 ## P1 — stabilize the alpha
 
 - [ ] Add automated route-level tests for search, import, ratings, comments, profiles, reports, and account deletion.
-- [ ] Add a repeatable database backup schedule and perform a restore drill.
-- [ ] Add security headers: CSP, HSTS, `X-Content-Type-Options`, referrer policy, permissions policy, and frame restrictions.
-- [ ] Add explicit CSRF or same-origin validation to state-changing routes.
+- [x] Add a repeatable database backup procedure and perform an isolated restore drill.
+- [x] Add security headers: CSP, HSTS, `X-Content-Type-Options`, referrer policy, permissions policy, and frame restrictions.
+- [x] Add explicit same-origin validation to state-changing routes while preserving OAuth callbacks.
 - [ ] Replace user-controlled rate-limit keys with identity- and network-aware controls.
 - [ ] Update dependencies and resolve the moderate nested PostCSS audit findings.
 - [ ] Add structured server error logging without recording comment contents or unnecessary personal information.
-- [ ] Add a simple uptime check for the homepage and `/api/health`.
+- [x] Add scheduled uptime checks for the homepage, `/api/health`, and an OpenAlex-backed search.
 - [ ] Review the privacy, terms, moderation, copyright, and data-retention language with qualified local advice before wider promotion.
 
 Exit criterion: five testers complete the script, backups are restorable, and no unresolved high-severity privacy, security, or data-loss issue remains.
